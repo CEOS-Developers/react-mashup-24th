@@ -7,7 +7,8 @@ const VARIANT_STYLES = {
 
 const SIZE_STYLES = {
   lg: "w-[362px] h-(--unit-56) p-padding-large",
-  sm: "w-[322px] h-[50px] p-padding-medium",
+  md: "w-[322px] h-[50px] p-padding-medium",
+  sm: "w-[232px] h-[50px] p-padding-medium",
 };
 
 interface ButtonProps extends ComponentPropsWithoutRef<"button"> {
@@ -16,7 +17,7 @@ interface ButtonProps extends ComponentPropsWithoutRef<"button"> {
 }
 
 type ButtonVariant = "blue" | "indigo";
-type ButtonSize = "lg" | "sm";
+type ButtonSize = "lg" | "md" | "sm";
 
 function Button({
   variant = "blue",
