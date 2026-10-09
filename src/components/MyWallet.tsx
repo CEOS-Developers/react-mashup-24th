@@ -2,17 +2,14 @@ import type { ComponentPropsWithoutRef } from "react";
 
 interface MyWalletProps extends ComponentPropsWithoutRef<"div"> {
   balance: number;
-  onCharge?: () => void;
-  onWithdraw?: () => void;
 }
 
-function MyWallet({
-  balance,
-  onCharge,
-  onWithdraw,
-  className = "",
-  ...props
-}: MyWalletProps) {
+// 충전, 출금은 구현 범위 밖이라 누르면 안내 alert 만 띄웁니다.
+function showOutOfScopeAlert() {
+  alert("구현 범위 밖입니다.");
+}
+
+function MyWallet({ balance, className = "", ...props }: MyWalletProps) {
   return (
     <div
       className={`flex w-[362px] shrink-0 flex-col items-start justify-center self-stretch rounded-medium bg-surface-default p-padding-wide ${className}`}
@@ -30,7 +27,7 @@ function MyWallet({
       <div className="flex items-center justify-end gap-gap-medium self-stretch">
         <button
           type="button"
-          onClick={onCharge}
+          onClick={showOutOfScopeAlert}
           className="cursor-pointer text-body-5-semibold text-text-secondary"
         >
           충전
@@ -38,7 +35,7 @@ function MyWallet({
         <div className="h-[18px] w-px bg-surface-disabled" />
         <button
           type="button"
-          onClick={onWithdraw}
+          onClick={showOutOfScopeAlert}
           className="cursor-pointer text-body-5-semibold text-text-secondary"
         >
           출금
