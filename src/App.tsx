@@ -1,9 +1,8 @@
+import { RouterProvider } from "react-router";
+import router from "./routes";
+
 function App() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-2xl font-bold">CEOS MashUp Team 02</h1>
-    </div>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
