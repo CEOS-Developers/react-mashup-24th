@@ -25,7 +25,7 @@ function NavBar({ className = "", ...props }: ComponentPropsWithoutRef<"nav">) {
           key={path}
           to={path}
           end
-          className="flex w-[35px] shrink-0 flex-col items-center gap-gap-small"
+          className="flex w-[35px] shrink-0 flex-col items-center gap-gap-4"
         >
           {({ isActive }) => (
             <>

@@ -14,11 +14,11 @@ function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-[#F6F8FB]">
-      <main className="flex flex-1 flex-col items-center gap-gap-large px-[20px] py-padding-wide">
+      <main className="flex flex-1 flex-col items-center gap-gap-12 px-[20px] py-padding-wide">
         <MyWallet balance={100} />
 
         {/* [임시 송금 카드] 송금 컴포넌트 완성되면 이 블록을 잘라내고 교체 */}
-        <div className="flex w-[362px] flex-col gap-gap-large rounded-medium bg-surface-default p-padding-wide">
+        <div className="flex w-[362px] flex-col gap-gap-12 rounded-medium bg-surface-default p-padding-wide">
           <div className="flex items-center justify-between px-padding-small">
             <span className="text-body-2-semibold text-text-secondary">
               송금
