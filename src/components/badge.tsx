@@ -50,7 +50,7 @@ function Badge({
       <img
         src={FLAG_IMAGES[currency]}
         alt={`${currency} flag`}
-        className={`${currentSize.icon} shrink-0 rounded-full object-cover`}
+        className={`${currentSize.icon} shrink-0 radius-full object-cover`}
       />
     </div>
   );

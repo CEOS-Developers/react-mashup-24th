@@ -24,6 +24,6 @@
     --line-weight-regular: 1px;
     --line-weight-bold: 2px;
 }
-@utility lineweight-* {
+@utility line-weight-* {
     border-width: --value(--line-weight-*);
 }
