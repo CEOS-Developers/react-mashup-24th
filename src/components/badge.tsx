@@ -1,9 +1,9 @@
 import type { ComponentPropsWithoutRef } from "react";
 
-import krwFlag from "../assets/flags/krw.png";
-import sgdFlag from "../assets/flags/sgd.png";
-import idrFlag from "../assets/flags/idr.png";
-import vndFlag from "../assets/flags/vnd.png";
+import krwFlag from "../assets/flags/southkorea.png";
+import sgdFlag from "../assets/flags/singapor.png";
+import idrFlag from "../assets/flags/indonesia.png";
+import vndFlag from "../assets/flags/vietnam.png";
 
 export const FLAG_IMAGES = {
   KRW: krwFlag,
@@ -50,7 +50,7 @@ function Badge({
       <img
         src={FLAG_IMAGES[currency]}
         alt={`${currency} flag`}
-        className={`${currentSize.icon} shrink-0 radius-full object-cover`}
+        className={`${currentSize.icon} shrink-0 rounded-full object-cover ring-1 ring-border-default`}
       />
     </div>
   );
