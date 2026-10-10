@@ -1,13 +1,13 @@
 :root {
     --action-default: var(--color-blue-500);
     --action-pressed: var(--color-blue-700);
-    --action-disabled: var(--color-gray-400);
+    --action-disabled: var(--color-gray-200);
 }
 
 .dark {
     --action-default: var(--color-blue-700);
     --action-pressed: var(--color-blue-800);
-    --action-disabled: var(--color-gray-500);
+    --action-disabled: var(--color-gray-700);
 }
 
 @theme inline {
