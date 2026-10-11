@@ -1,22 +1,14 @@
 import { useId } from "react";
-import Badge, { FLAG_IMAGES, type CurrencyType } from "./Badge";
-
-function isSupportedCurrency(currency: string): currency is CurrencyType {
-  return Object.prototype.hasOwnProperty.call(FLAG_IMAGES, currency);
-}
-
-export interface CurrencyOption {
-  code: string;
-  label: string;
-}
+import Badge from "./Badge";
+import { isCurrencyCode } from "../constants/currencies";
 
 interface CurrencyAmountFieldProps {
   label: string;
   currency: string;
-  currencies: readonly CurrencyOption[];
   value: string;
   onChange?: (value: string) => void;
-  onCurrencyChange?: (currency: string) => void;
+  // 통화 버튼을 눌렀을 때 실행됩니다. (국가/통화 선택 시트 열기) 없으면 버튼이 비활성화됩니다.
+  onCurrencyClick?: () => void;
   readOnly?: boolean;
   error?: string;
   helperText?: string;
@@ -26,10 +18,9 @@ interface CurrencyAmountFieldProps {
 function CurrencyAmountField({
   label,
   currency,
-  currencies,
   value,
   onChange,
-  onCurrencyChange,
+  onCurrencyClick,
   readOnly = false,
   error,
   helperText,
@@ -41,24 +32,33 @@ function CurrencyAmountField({
       className={`w-full ${variant === "card" ? "rounded-medium bg-surface-default p-padding-wide" : "px-padding-wide py-padding-medium"}`}
     >
       <div className="flex items-center gap-gap-8">
-        <div className="flex shrink-0 items-center gap-gap-8">
-          {isSupportedCurrency(currency) && (
+        <button
+          type="button"
+          aria-label={`${label} 통화 선택, 현재 ${currency}`}
+          aria-haspopup="dialog"
+          onClick={onCurrencyClick}
+          disabled={!onCurrencyClick}
+          className="flex shrink-0 cursor-pointer items-center gap-gap-8 text-body-1-semibold text-text-default disabled:cursor-default"
+        >
+          {isCurrencyCode(currency) && (
             <Badge currency={currency} size="md" aria-hidden="true" />
           )}
-          <select
-            aria-label={`${label} 통화`}
-            value={currency}
-            onChange={(event) => onCurrencyChange?.(event.target.value)}
-            disabled={!onCurrencyChange || currencies.length < 2}
-            className="cursor-pointer bg-transparent text-body-1-semibold text-text-default disabled:cursor-default disabled:opacity-100"
-          >
-            {currencies.map((option) => (
-              <option key={option.code} value={option.code} label={option.code}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+          {currency}
+          {onCurrencyClick && (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M2.1428 4.126L5.55549 7.76188C5.6105 7.83657 5.67874 7.89652 5.75552 7.93762C5.8323 7.97872 5.91582 8 6.00033 8C6.08484 8 6.16835 7.97872 6.24514 7.93762C6.32192 7.89652 6.39016 7.83657 6.44517 7.76188L9.85787 4.126C10.1836 3.6835 9.91353 3 9.41303 3L2.58666 3C2.08615 3 1.81612 3.6835 2.1428 4.126Z"
+                fill="var(--icon-default)"
+              />
+            </svg>
+          )}
+        </button>
         <div className="flex min-w-0 flex-1 flex-col items-end gap-gap-4">
           <label
             htmlFor={id}

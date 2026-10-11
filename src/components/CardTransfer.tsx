@@ -2,7 +2,6 @@ import Toggle, { type ToggleValue } from "./Toggle";
 import ExchangeRate from "./ExchangeRate";
 import Button from "./Button";
 import Wallet from "./icons/Wallet";
-import type { CurrencyOption } from "./CurrencyAmountField";
 import TransferAmountFields from "./TransferAmountFields";
 
 const MIN_SEND_AMOUNT_KRW = 5_000;
@@ -27,8 +26,8 @@ export interface TransferQuote {
 interface CardTransferProps {
   value: TransferDraft;
   onChange: (value: TransferDraft) => void;
-  sendCurrencies: readonly CurrencyOption[];
-  receiveCurrencies: readonly CurrencyOption[];
+  onFromCurrencyClick?: () => void;
+  onToCurrencyClick?: () => void;
   walletBalance: string;
   quote?: TransferQuote;
   indicativeRate?: number;
@@ -41,8 +40,8 @@ interface CardTransferProps {
 function CardTransfer({
   value,
   onChange,
-  sendCurrencies,
-  receiveCurrencies,
+  onFromCurrencyClick,
+  onToCurrencyClick,
   walletBalance,
   quote,
   indicativeRate,
@@ -109,17 +108,11 @@ function CardTransfer({
                 toCurrency={value.toCurrency}
                 sendAmount={value.sendAmount}
                 receiveAmount={currentQuote?.receiveAmount ?? ""}
-                sendCurrencies={sendCurrencies}
-                receiveCurrencies={receiveCurrencies}
                 onSendAmountChange={(sendAmount) =>
                   onChange({ ...value, sendAmount })
                 }
-                onFromCurrencyChange={(fromCurrency) =>
-                  onChange({ ...value, fromCurrency })
-                }
-                onToCurrencyChange={(toCurrency) =>
-                  onChange({ ...value, toCurrency })
-                }
+                onFromCurrencyClick={onFromCurrencyClick}
+                onToCurrencyClick={onToCurrencyClick}
                 helperText={
                   belowMinimum ? "최소 송금액은 5,000 KRW입니다." : undefined
                 }
