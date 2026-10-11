@@ -37,7 +37,7 @@ function Button({
     <button
       type={type}
       disabled={disabled}
-      className={`flex items-center justify-center gap-gap-small rounded-small text-body-1-bold text-text-inverse ${SIZE_STYLES[size]} ${variantStyle} ${className}`}
+      className={`flex items-center justify-center gap-gap-4 rounded-small text-body-1-bold text-text-inverse ${SIZE_STYLES[size]} ${variantStyle} ${className}`}
       {...props}
     >
       {children}

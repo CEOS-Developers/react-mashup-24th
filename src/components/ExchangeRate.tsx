@@ -23,7 +23,7 @@ function ExchangeRate({
 }: ExchangeRateProps) {
   return (
     <div
-      className={`inline-flex h-(--unit-36) items-center justify-center gap-gap-medium rounded-full bg-surface-focused px-padding-wide py-padding-medium text-body-4-semibold text-text-informative ${className}`}
+      className={`inline-flex h-(--unit-36) items-center justify-center gap-gap-8 rounded-full bg-blue-100 px-padding-wide py-padding-medium text-body-4-semibold text-text-informative ${className}`}
       {...props}
     >
       <span>1 {fromCurrency}</span>

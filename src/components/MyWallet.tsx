@@ -16,7 +16,7 @@ function MyWallet({ balance, className = "", ...props }: MyWalletProps) {
       {...props}
     >
       <div className="flex items-center justify-between self-stretch px-padding-small">
-        <div className="flex flex-col gap-gap-small">
+        <div className="flex flex-col gap-gap-4">
           <span className="text-body-2-semibold text-text-secondary">월렛</span>
           <span className="text-title-1-bold text-text-default">
             {balance.toLocaleString("ko-KR")}
@@ -24,7 +24,7 @@ function MyWallet({ balance, className = "", ...props }: MyWalletProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-gap-medium self-stretch">
+      <div className="flex items-center justify-end gap-gap-8 self-stretch">
         <button
           type="button"
           onClick={showOutOfScopeAlert}

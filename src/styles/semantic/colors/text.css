@@ -2,6 +2,7 @@
   --text-default: var(--color-gray-900);
   --text-secondary: var(--color-gray-800);
   --text-tertiary: var(--color-gray-600);
+  --text-weak: var(--color-gray-400);
   --text-disabled: var(--color-gray-400);
   --text-inverse: var(--color-gray-50);
   --text-informative: var(--color-blue-500);
@@ -13,6 +14,7 @@
   --text-default: var(--color-gray-50);
   --text-secondary: var(--color-gray-200);
   --text-tertiary: var(--color-gray-400);
+  --text-weak: var(--color-gray-700);
   --text-disabled: var(--color-gray-700);
   --text-inverse: var(--color-gray-800);
   --text-informative: var(--color-blue-300);
@@ -24,6 +26,7 @@
   --color-text-default: var(--text-default);
   --color-text-secondary: var(--text-secondary);
   --color-text-tertiary: var(--text-tertiary);
+  --color-text-weak: var(--text-weak);
   --color-text-disabled: var(--text-disabled);
   --color-text-inverse: var(--text-inverse);
   --color-text-informative: var(--text-informative);

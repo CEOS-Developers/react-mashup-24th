@@ -14,7 +14,16 @@
     --spacing-padding-large: var(--unit-12);
     --spacing-padding-wide: var(--unit-16);
 
-    --spacing-gap-small: var(--unit-4);
-    --spacing-gap-medium: var(--unit-8);
-    --spacing-gap-large: var(--unit-16);
+    --spacing-gap-2: var(--unit-2);
+    --spacing-gap-4: var(--unit-4);
+    --spacing-gap-8: var(--unit-8);
+    --spacing-gap-12: var(--unit-12);
+    --spacing-gap-16: var(--unit-16);
+
+    --line-weight-thin: 0.5px;
+    --line-weight-regular: 1px;
+    --line-weight-bold: 2px;
+}
+@utility line-weight-* {
+    border-width: --value(--line-weight-*);
 }

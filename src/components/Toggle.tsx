@@ -17,7 +17,7 @@ function Toggle({ value, onChange, className = "", ...props }: ToggleProps) {
   return (
     <div
       role="radiogroup"
-      className={`flex h-(--unit-44) w-[155px] items-start justify-center gap-gap-small rounded-small bg-surface-subtle py-padding-small pr-[3px] pl-padding-small ${className}`}
+      className={`flex h-(--unit-44) w-[155px] items-start justify-center gap-gap-4 rounded-small bg-surface-subtle py-padding-small pr-[3px] pl-padding-small ${className}`}
       {...props}
     >
       {TOGGLE_OPTIONS.map((option) => {
