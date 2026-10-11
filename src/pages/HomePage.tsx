@@ -1,9 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import NavBar from "../components/NavBar";
 import MyWallet from "../components/MyWallet";
-import CardTransfer, { type TransferDraft } from "../components/CardTransfer";
+import CardTransfer, {
+  type TransferDraft,
+  type TransferQuote,
+} from "../components/CardTransfer";
 import CurrencySelectSheet from "../components/CurrencySelectSheet";
-import { getMockRate } from "../mocks/exchangeRates";
+import { getMockQuote, getMockRate } from "../mocks/exchangeRates";
+import { useTransferStore } from "../stores/useTransferStore";
+import { PATHS } from "../routes/paths";
 
 // 임시 잔액입니다. API 연동 시 계좌 잔액 응답값으로 교체합니다.
 const MOCK_WALLET_BALANCE = 10000;
@@ -16,6 +22,27 @@ function HomePage() {
     sendAmount: "",
   });
   const [openSheet, setOpenSheet] = useState<"from" | "to" | null>(null);
+  const setTransfer = useTransferStore((state) => state.setTransfer);
+  const navigate = useNavigate();
+
+  const quote = getMockQuote(draft);
+
+  // 송금 정보를 전역 상태에 저장하고 다음 화면으로 이동합니다.
+  const handleSubmit = (
+    submitted: TransferDraft,
+    submittedQuote?: TransferQuote,
+  ) => {
+    if (!submittedQuote) return;
+    setTransfer({
+      fromCurrency: submitted.fromCurrency,
+      toCurrency: submitted.toCurrency,
+      rate: submittedQuote.rate,
+      sendAmount: submitted.sendAmount,
+      receiveAmount: submittedQuote.receiveAmount,
+    });
+    // TODO: 다음 화면이 생기면 경로 교체
+    navigate(PATHS.HOME);
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-[#F6F8FB]">
@@ -26,7 +53,10 @@ function HomePage() {
           value={draft}
           onChange={setDraft}
           walletBalance={MOCK_WALLET_BALANCE.toLocaleString("ko-KR")}
+          quote={quote}
           indicativeRate={getMockRate(draft.fromCurrency, draft.toCurrency)}
+          // 해외일 때만 송금하기를 활성화합니다.
+          onSubmit={draft.region === "overseas" ? handleSubmit : undefined}
           onFromCurrencyClick={() => setOpenSheet("from")}
           onToCurrencyClick={() => setOpenSheet("to")}
         />
