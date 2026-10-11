@@ -1,4 +1,9 @@
+import { useState } from 'react';
+import { formatDateKey } from '../utils/date';
+import Calendar from './home/components/Calendar';
+
 function HomePage() {
+  const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
   return (
     <div className="text-fg-neutral-default">
       <section className="flex h-13 items-center bg-bg-neutral-weak px-4">
@@ -18,11 +23,8 @@ function HomePage() {
         </div>
       </section>
 
-      <section className="sticky top-0 z-20 mb-3 flex h-31 flex-col justify-center gap-1 border-b border-border-default bg-bg-brand-subtle px-4">
-        <h2 className="typo-body-medium-sb">4번 영역 · 124px · 상단 고정</h2>
-        <p className="typo-body-small-md text-fg-neutral-muted">
-          화면 상단에 닿으면 고정됩니다. 아래 매치 리스트와의 간격은 12px입니다.
-        </p>
+      <section className="sticky top-0 z-20 mb-3 flex h-31 flex-col justify-center gap-1 border-b border-border-default bg-bg-neutral-default">
+        <Calendar selectedKey={selectedDate} onSelect={setSelectedDate} />
       </section>
 
       <ul className="space-y-3 px-4" aria-label="매치 리스트 자리표시자">
