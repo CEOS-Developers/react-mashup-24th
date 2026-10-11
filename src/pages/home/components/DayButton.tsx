@@ -22,7 +22,13 @@ const dateColor: Record<DayType, string> = {
   holiday: 'text-fg-accent-calendar-red',
 };
 
-function DayButton({ dayLabel, date, type = 'default', selected = false, onClick }: DayButtonProps) {
+function DayButton({
+  dayLabel,
+  date,
+  type = 'default',
+  selected = false,
+  onClick,
+}: DayButtonProps) {
   const backgroundClassName = selected ? 'bg-bg-neutral-solid' : 'bg-bg-neutral-weak';
   const dayLabelClassName = selected ? 'text-fg-brand-default' : dayLabelColor[type];
   const dateClassName = selected ? 'text-fg-brand-default' : dateColor[type];
