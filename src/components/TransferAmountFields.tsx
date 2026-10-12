@@ -1,17 +1,13 @@
-import CurrencyAmountField, {
-  type CurrencyOption,
-} from "./CurrencyAmountField";
+import CurrencyAmountField from "./CurrencyAmountField";
 
 interface TransferAmountFieldsProps {
   fromCurrency: string;
   toCurrency: string;
   sendAmount: string;
   receiveAmount: string;
-  sendCurrencies: readonly CurrencyOption[];
-  receiveCurrencies: readonly CurrencyOption[];
   onSendAmountChange: (amount: string) => void;
-  onFromCurrencyChange?: (currency: string) => void;
-  onToCurrencyChange?: (currency: string) => void;
+  onFromCurrencyClick?: () => void;
+  onToCurrencyClick?: () => void;
   helperText?: string;
   variant?: "plain" | "card";
 }
@@ -21,11 +17,9 @@ function TransferAmountFields({
   toCurrency,
   sendAmount,
   receiveAmount,
-  sendCurrencies,
-  receiveCurrencies,
   onSendAmountChange,
-  onFromCurrencyChange,
-  onToCurrencyChange,
+  onFromCurrencyClick,
+  onToCurrencyClick,
   helperText,
   variant = "plain",
 }: TransferAmountFieldsProps) {
@@ -34,20 +28,18 @@ function TransferAmountFields({
       <CurrencyAmountField
         label="보내는 금액"
         currency={fromCurrency}
-        currencies={sendCurrencies}
         value={sendAmount}
         onChange={onSendAmountChange}
-        onCurrencyChange={onFromCurrencyChange}
+        onCurrencyClick={onFromCurrencyClick}
         helperText={helperText}
         variant={variant}
       />
       <CurrencyAmountField
         label="받는 금액"
         currency={toCurrency}
-        currencies={receiveCurrencies}
         value={receiveAmount}
         readOnly
-        onCurrencyChange={onToCurrencyChange}
+        onCurrencyClick={onToCurrencyClick}
         variant={variant}
       />
     </div>

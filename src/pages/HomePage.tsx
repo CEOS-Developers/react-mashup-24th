@@ -1,21 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import NavBar from "../components/NavBar";
 import MyWallet from "../components/MyWallet";
-import CardTransfer, { type TransferDraft } from "../components/CardTransfer";
-
-const SEND_CURRENCIES = [{ code: "KRW", label: "대한민국 원" }];
-const RECEIVE_CURRENCIES = [
-  { code: "VND", label: "베트남 동" },
-  { code: "SGD", label: "싱가포르 달러" },
-  { code: "IDR", label: "인도네시아 루피아" },
-];
-
-// UI 확인용 임의 환율입니다. 실시간 시세가 아니며 1 KRW 기준입니다.
-const MOCK_EXCHANGE_RATES: Record<string, number> = {
-  VND: 19.03,
-  SGD: 0.00095,
-  IDR: 11.5,
-};
+import CardTransfer, {
+  type TransferDraft,
+  type TransferQuote,
+} from "../components/CardTransfer";
+import CurrencySelectSheet from "../components/CurrencySelectSheet";
+import { getMockQuote, getMockRate } from "../mocks/exchangeRates";
+import { useTransferStore } from "../stores/useTransferStore";
+import { PATHS } from "../routes/paths";
 
 // 임시 잔액입니다. API 연동 시 계좌 잔액 응답값으로 교체합니다.
 const MOCK_WALLET_BALANCE = 10000;
@@ -27,6 +21,28 @@ function HomePage() {
     toCurrency: "VND",
     sendAmount: "",
   });
+  const [openSheet, setOpenSheet] = useState<"from" | "to" | null>(null);
+  const setTransfer = useTransferStore((state) => state.setTransfer);
+  const navigate = useNavigate();
+
+  const quote = getMockQuote(draft);
+
+  // 송금 정보를 전역 상태에 저장하고 다음 화면으로 이동합니다.
+  const handleSubmit = (
+    submitted: TransferDraft,
+    submittedQuote?: TransferQuote,
+  ) => {
+    if (!submittedQuote) return;
+    setTransfer({
+      fromCurrency: submitted.fromCurrency,
+      toCurrency: submitted.toCurrency,
+      rate: submittedQuote.rate,
+      sendAmount: submitted.sendAmount,
+      receiveAmount: submittedQuote.receiveAmount,
+    });
+    // TODO: 다음 화면이 생기면 경로 교체
+    navigate(PATHS.HOME);
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-[#F6F8FB]">
@@ -36,13 +52,33 @@ function HomePage() {
         <CardTransfer
           value={draft}
           onChange={setDraft}
-          sendCurrencies={SEND_CURRENCIES}
-          receiveCurrencies={RECEIVE_CURRENCIES}
           walletBalance={MOCK_WALLET_BALANCE.toLocaleString("ko-KR")}
-          indicativeRate={MOCK_EXCHANGE_RATES[draft.toCurrency]}
+          quote={quote}
+          indicativeRate={getMockRate(draft.fromCurrency, draft.toCurrency)}
+          // 해외일 때만 송금하기를 활성화합니다.
+          onSubmit={draft.region === "overseas" ? handleSubmit : undefined}
+          onFromCurrencyClick={() => setOpenSheet("from")}
+          onToCurrencyClick={() => setOpenSheet("to")}
         />
       </main>
       <NavBar />
+
+      <CurrencySelectSheet
+        open={openSheet === "from"}
+        onClose={() => setOpenSheet(null)}
+        title="보내는 국가 / 통화"
+        value={draft.fromCurrency}
+        onChange={(fromCurrency) => setDraft({ ...draft, fromCurrency })}
+        disabledCurrencies={["VND"]}
+      />
+      <CurrencySelectSheet
+        open={openSheet === "to"}
+        onClose={() => setOpenSheet(null)}
+        title="받는 국가 / 통화"
+        value={draft.toCurrency}
+        onChange={(toCurrency) => setDraft({ ...draft, toCurrency })}
+        searchable
+      />
     </div>
   );
 }

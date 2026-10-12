@@ -1,14 +1,11 @@
-import Badge, { FLAG_IMAGES, type CurrencyType } from "./Badge";
+import Badge from "./Badge";
+import { isCurrencyCode } from "../constants/currencies";
 
 interface TransferAmountSummaryProps {
   fromCurrency: string;
   toCurrency: string;
   sendAmount: string;
   receiveAmount: string;
-}
-
-function isSupportedCurrency(currency: string): currency is CurrencyType {
-  return Object.prototype.hasOwnProperty.call(FLAG_IMAGES, currency);
 }
 
 // 숫자로 변환하지 않아 큰 금액과 소수 금액의 정밀도를 유지합니다.
@@ -31,7 +28,7 @@ function TransferAmountSummary({
       className="flex w-full flex-wrap items-center justify-center gap-gap-12 rounded-medium bg-surface-default p-padding-wide"
     >
       <div className="flex items-center gap-gap-8">
-        {isSupportedCurrency(fromCurrency) && (
+        {isCurrencyCode(fromCurrency) && (
           <Badge currency={fromCurrency} aria-hidden="true" />
         )}
         <span className="sr-only">보내는 금액 {fromCurrency}</span>
@@ -43,7 +40,7 @@ function TransferAmountSummary({
         →
       </span>
       <div className="flex items-center gap-gap-8">
-        {isSupportedCurrency(toCurrency) && (
+        {isCurrencyCode(toCurrency) && (
           <Badge currency={toCurrency} aria-hidden="true" />
         )}
         <span className="sr-only">받는 금액 {toCurrency}</span>
