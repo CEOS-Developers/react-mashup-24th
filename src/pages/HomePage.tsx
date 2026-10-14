@@ -40,8 +40,7 @@ function HomePage() {
       sendAmount: submitted.sendAmount,
       receiveAmount: submittedQuote.receiveAmount,
     });
-    // TODO: 다음 화면이 생기면 경로 교체
-    navigate(PATHS.HOME);
+    navigate(PATHS.TRANSFER);
   };
 
   return (
