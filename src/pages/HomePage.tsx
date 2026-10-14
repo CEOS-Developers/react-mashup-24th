@@ -15,6 +15,7 @@ import { PATHS } from "../routes/paths";
 const MOCK_WALLET_BALANCE = 10000;
 
 function HomePage() {
+  // TODO: API 연동 시 과거 이력 기준으로 카드들 변경 시키는 기능 추가하기
   const [draft, setDraft] = useState<TransferDraft>({
     region: "overseas",
     fromCurrency: "KRW",

@@ -4,6 +4,9 @@ import Header from "../components/Header";
 import ExchangeRate from "../components/ExchangeRate";
 import TransferAmountFields from "../components/TransferAmountFields";
 import CurrencySelectSheet from "../components/CurrencySelectSheet";
+import TransferMethodTab, {
+  type TransferMethodTabValue,
+} from "../components/TransferMethodTab";
 import { getMockQuote, getMockRate } from "../mocks/exchangeRates";
 import {
   useTransferStore,
@@ -26,6 +29,7 @@ function TransferPage() {
   const transfer = useTransferStore((state) => state.transfer);
   const setTransfer = useTransferStore((state) => state.setTransfer);
   const [openSheet, setOpenSheet] = useState<"from" | "to" | null>(null);
+  const [methodTab, setMethodTab] = useState<TransferMethodTabValue>("rate");
 
   // 홈을 거치지 않고 들어오면 송금 정보가 없으므로 홈으로 돌려보냅니다.
   if (!transfer) return <Navigate to={PATHS.HOME} replace />;
@@ -51,23 +55,29 @@ function TransferPage() {
         />
       </Header>
 
-      <main className="flex w-[402px] flex-1 flex-col items-center gap-gap-12 px-[20px] py-padding-wide">
-        <TransferAmountFields
-          variant="card"
-          fromCurrency={transfer.fromCurrency}
-          toCurrency={transfer.toCurrency}
-          sendAmount={transfer.sendAmount}
-          receiveAmount={transfer.receiveAmount}
-          onSendAmountChange={(sendAmount) => updateTransfer({ sendAmount })}
-          onFromCurrencyClick={() => setOpenSheet("from")}
-          onToCurrencyClick={() => setOpenSheet("to")}
-          helperText={
-            isBelowMinimum(transfer.fromCurrency, transfer.sendAmount)
-              ? MIN_SEND_AMOUNT_MESSAGE
-              : undefined
-          }
-        />
-        {/* 받는 방법 탭 + 카드 */}
+      <main className="flex w-[402px] flex-1 flex-col">
+        <section className="flex flex-col gap-gap-12 px-[20px] py-padding-wide">
+          <TransferAmountFields
+            variant="card"
+            fromCurrency={transfer.fromCurrency}
+            toCurrency={transfer.toCurrency}
+            sendAmount={transfer.sendAmount}
+            receiveAmount={transfer.receiveAmount}
+            onSendAmountChange={(sendAmount) => updateTransfer({ sendAmount })}
+            onFromCurrencyClick={() => setOpenSheet("from")}
+            onToCurrencyClick={() => setOpenSheet("to")}
+            helperText={
+              isBelowMinimum(transfer.fromCurrency, transfer.sendAmount)
+                ? MIN_SEND_AMOUNT_MESSAGE
+                : undefined
+            }
+          />
+        </section>
+
+        <section className="flex flex-1 flex-col bg-surface-default">
+          <TransferMethodTab value={methodTab} onChange={setMethodTab} />
+          {/* 받는 방법 카드 */}
+        </section>
       </main>
 
       {/* 하단 확인 버튼 */}
