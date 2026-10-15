@@ -1,11 +1,21 @@
 import type { ApiResponse, ReceiveOptionsResult } from "../types/receiveOption";
 
-// "오늘 도착" 카드 확인용으로 오늘 날짜를 "YYYY-MM-DD" 로 만듭니다. (날짜가 지나도 항상 오늘로 보이게)
-const now = new Date();
-const TODAY = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+// 오늘로부터 days 일 뒤 날짜를 "YYYY-MM-DD" 로 만듭니다. (날짜가 지나도 항상 같은 간격으로 보이게)
+function daysFromToday(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
 
 // 받는 방법 리스트 조회 API 응답 예시입니다.
 // 나중에 api 연동시 이 파일을 지우고, import 하는 곳을 API 응답으로 교체하면 됩니다.
+//
+// 탭별 정렬 확인용으로 값을 다르게 넣었습니다. (ATM카드는 추천이라 항상 맨 위)
+//  - 좋은 환율(rateMargin↑):  ZaloPay > MoMo > 은행 > 현금 수령
+//  - 빠른 도착(arrivalDate↑): ZaloPay > MoMo > 현금 수령 > 은행
+//  - 낮은 수수료(fixedFee↑):  현금 수령 > 은행 > MoMo > ZaloPay
 export const MOCK_RECEIVE_OPTIONS_RESPONSE: ApiResponse<ReceiveOptionsResult> =
   {
     isSuccess: true,
@@ -23,9 +33,9 @@ export const MOCK_RECEIVE_OPTIONS_RESPONSE: ApiResponse<ReceiveOptionsResult> =
           speedType: "EXPRESS",
           fixedFee: 5000,
           rateMargin: 0.0005,
-          totalAmount: 18443074,
+          totalAmount: 18925383,
           transferTime: "15분 ~ 1일",
-          arrivalDate: TODAY,
+          arrivalDate: daysFromToday(0),
           badges: ["RECOMMENDED"],
         },
         {
@@ -35,9 +45,42 @@ export const MOCK_RECEIVE_OPTIONS_RESPONSE: ApiResponse<ReceiveOptionsResult> =
           speedType: "STANDARD",
           fixedFee: 2500,
           rateMargin: 0.0015,
-          totalAmount: 18424622,
+          totalAmount: 18953951,
           transferTime: "영업일 2~3일",
-          arrivalDate: "2026-10-12",
+          arrivalDate: daysFromToday(3),
+        },
+        {
+          methodType: "WALLET",
+          methodProvider: "MOMO",
+          methodName: "MoMo",
+          speedType: "EXPRESS",
+          fixedFee: 3500,
+          rateMargin: 0.001,
+          totalAmount: 18944432,
+          transferTime: "1시간 ~ 1일",
+          arrivalDate: daysFromToday(1),
+        },
+        {
+          methodType: "CASH",
+          methodProvider: "PICKUP",
+          methodName: "현금 수령",
+          speedType: "STANDARD",
+          fixedFee: 1500,
+          rateMargin: 0.003,
+          totalAmount: 18944451,
+          transferTime: "영업일 1~2일",
+          arrivalDate: daysFromToday(2),
+        },
+        {
+          methodType: "WALLET",
+          methodProvider: "ZALOPAY",
+          methodName: "ZaloPay",
+          speedType: "EXPRESS",
+          fixedFee: 4000,
+          rateMargin: 0.0008,
+          totalAmount: 18938717,
+          transferTime: "15분 ~ 1시간",
+          arrivalDate: daysFromToday(0),
         },
       ],
     },

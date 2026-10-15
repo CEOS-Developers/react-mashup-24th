@@ -10,6 +10,7 @@ import TransferMethodTab, {
 import ReceiveMethodCard from "../components/ReceiveMethodCard";
 import { MOCK_RECEIVE_OPTIONS_RESPONSE } from "../mocks/receiveOptions";
 import { getReceiveOptionKey } from "../types/receiveOption";
+import { sortReceiveOptions } from "../utils/sortReceiveOptions";
 import { getMockQuote, getMockRate } from "../mocks/exchangeRates";
 import {
   useTransferStore,
@@ -19,6 +20,7 @@ import { PATHS } from "../routes/paths";
 import {
   MIN_SEND_AMOUNT_MESSAGE,
   isBelowMinimum,
+  isValidAmount,
 } from "../utils/transferAmount";
 
 type TransferInput = Pick<
@@ -43,8 +45,16 @@ function TransferPage() {
   if (!transfer) return <Navigate to={PATHS.HOME} replace />;
 
   // 금액·통화가 바뀌면 환율과 받는 금액을 다시 계산해서 store 에 저장합니다.
+  // 금액이 비었거나 0, 또는 KRW 5,000 미만이면 받는 방법 카드를 error 상태로 보여줍니다.
+  const hasAmountError = (input: TransferInput) =>
+    !isValidAmount(input.sendAmount) ||
+    isBelowMinimum(input.fromCurrency, input.sendAmount);
+  const amountError = hasAmountError(transfer);
+
   const updateTransfer = (patch: Partial<TransferInput>) => {
     const next = { ...transfer, ...patch };
+    // error 가 되면 선택한 카드를 풀어줍니다.
+    if (hasAmountError(next)) setSelectedMethodKey(null);
     const quote = getMockQuote({ region: "overseas", ...next });
     setTransfer({
       ...next,
@@ -84,28 +94,31 @@ function TransferPage() {
 
         <section className="flex flex-1 flex-col bg-surface-default">
           <TransferMethodTab value={methodTab} onChange={setMethodTab} />
-          {/* TODO: API 연동 시 받는 방법 리스트 조회 응답으로 교체, 탭별 정렬 기준 적용 */}
+          {/* TODO: API 연동 시 받는 방법 리스트 조회 응답으로 교체 */}
           <div
             role="radiogroup"
             aria-label="받는 방법"
             className="flex flex-1 flex-col items-center gap-gap-16 px-[20px] py-padding-wide"
           >
-            {receiveOptions.options.map((option) => (
-              <ReceiveMethodCard
-                key={getReceiveOptionKey(option)}
-                option={option}
-                sendAmount={receiveOptions.sendAmount}
-                sendCurrency={receiveOptions.sendCurrency}
-                selected={getReceiveOptionKey(option) === selectedMethodKey}
-                // TODO: 자세히 보기 모달로 교체
-                onDetailClick={() =>
-                  alert(`${option.methodName} 자세히 보기 (모달 준비 중)`)
-                }
-                onSelect={() =>
-                  setSelectedMethodKey(getReceiveOptionKey(option))
-                }
-              />
-            ))}
+            {sortReceiveOptions(receiveOptions.options, methodTab).map(
+              (option) => (
+                <ReceiveMethodCard
+                  key={getReceiveOptionKey(option)}
+                  option={option}
+                  sendAmount={receiveOptions.sendAmount}
+                  sendCurrency={receiveOptions.sendCurrency}
+                  selected={getReceiveOptionKey(option) === selectedMethodKey}
+                  error={amountError}
+                  // TODO: 자세히 보기 모달로 교체
+                  onDetailClick={() =>
+                    alert(`${option.methodName} 자세히 보기 (모달 준비 중)`)
+                  }
+                  onSelect={() =>
+                    setSelectedMethodKey(getReceiveOptionKey(option))
+                  }
+                />
+              ),
+            )}
           </div>
         </section>
       </main>
