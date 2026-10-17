@@ -1,4 +1,4 @@
-import type { MethodBadgeType } from "../utils/receiveOptionBadges";
+import type { MethodBadgeType } from "../../utils/receiveOptionBadges";
 
 const BADGE_STYLES: Record<MethodBadgeType, { label: string; style: string }> =
   {

@@ -1,9 +1,9 @@
 import type { ComponentPropsWithoutRef } from "react";
-import type { ReceiveOption } from "../types/receiveOption";
-import ArrivalIcon from "./icons/ArrivalIcon";
-import CheckIcon from "./icons/CheckIcon";
+import type { ReceiveOption } from "../../types/receiveOption";
+import ArrivalIcon from "../icons/ArrivalIcon";
+import CheckIcon from "../icons/CheckIcon";
 import MethodBadge from "./MethodBadge";
-import type { MethodBadgeType } from "../utils/receiveOptionBadges";
+import type { MethodBadgeType } from "../../utils/receiveOptionBadges";
 
 interface ReceiveMethodCardProps extends ComponentPropsWithoutRef<"div"> {
   option: ReceiveOption;

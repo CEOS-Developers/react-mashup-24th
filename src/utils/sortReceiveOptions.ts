@@ -1,4 +1,4 @@
-import type { TransferMethodTabValue } from "../components/TransferMethodTab";
+import type { TransferMethodTabValue } from "../components/w2/TransferMethodTab";
 import type { ReceiveOption } from "../types/receiveOption";
 
 const isRecommended = (option: ReceiveOption) =>

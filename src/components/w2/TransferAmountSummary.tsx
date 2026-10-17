@@ -1,6 +1,6 @@
-import Badge from "./Badge";
-import DottedArrowIcon from "./icons/DottedArrowIcon";
-import { isCurrencyCode } from "../constants/currencies";
+import Badge from "../Badge";
+import DottedArrowIcon from "../icons/DottedArrowIcon";
+import { isCurrencyCode } from "../../constants/currencies";
 
 interface TransferAmountSummaryProps {
   fromCurrency: string;

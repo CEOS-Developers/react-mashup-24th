@@ -3,12 +3,12 @@ import { Navigate } from "react-router";
 import Header from "../components/Header";
 import ExchangeRate from "../components/ExchangeRate";
 import TransferAmountFields from "../components/TransferAmountFields";
-import TransferAmountSummary from "../components/TransferAmountSummary";
+import TransferAmountSummary from "../components/w2/TransferAmountSummary";
 import CurrencySelectSheet from "../components/CurrencySelectSheet";
 import TransferMethodTab, {
   type TransferMethodTabValue,
-} from "../components/TransferMethodTab";
-import ReceiveMethodCard from "../components/ReceiveMethodCard";
+} from "../components/w2/TransferMethodTab";
+import ReceiveMethodCard from "../components/w2/ReceiveMethodCard";
 import Button from "../components/Button";
 import { MOCK_RECEIVE_OPTIONS_RESPONSE } from "../mocks/receiveOptions";
 import { getReceiveOptionKey } from "../types/receiveOption";

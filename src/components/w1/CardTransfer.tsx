@@ -1,13 +1,13 @@
 import Toggle, { type ToggleValue } from "./Toggle";
-import ExchangeRate from "./ExchangeRate";
-import Button from "./Button";
-import Wallet from "./icons/Wallet";
-import TransferAmountFields from "./TransferAmountFields";
+import ExchangeRate from "../ExchangeRate";
+import Button from "../Button";
+import Wallet from "../icons/Wallet";
+import TransferAmountFields from "../TransferAmountFields";
 import {
   MIN_SEND_AMOUNT_MESSAGE,
   isBelowMinimum,
   isValidAmount,
-} from "../utils/transferAmount";
+} from "../../utils/transferAmount";
 
 export interface TransferDraft {
   region: ToggleValue;

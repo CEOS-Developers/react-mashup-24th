@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import NavBar from "../components/NavBar";
-import MyWallet from "../components/MyWallet";
+import MyWallet from "../components/w1/MyWallet";
 import CardTransfer, {
   type TransferDraft,
   type TransferQuote,
-} from "../components/CardTransfer";
+} from "../components/w1/CardTransfer";
 import CurrencySelectSheet from "../components/CurrencySelectSheet";
 import { getMockQuote, getMockRate } from "../mocks/exchangeRates";
 import { useTransferStore } from "../stores/useTransferStore";
