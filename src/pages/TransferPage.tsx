@@ -13,6 +13,10 @@ import Button from "../components/Button";
 import { MOCK_RECEIVE_OPTIONS_RESPONSE } from "../mocks/receiveOptions";
 import { getReceiveOptionKey } from "../types/receiveOption";
 import { sortReceiveOptions } from "../utils/sortReceiveOptions";
+import {
+  getEconomicalOptionKey,
+  getOptionBadges,
+} from "../utils/receiveOptionBadges";
 import { getMockQuote, getMockRate } from "../mocks/exchangeRates";
 import {
   useTransferStore,
@@ -62,6 +66,8 @@ function TransferPage() {
         (option) => getReceiveOptionKey(option) === selectedMethodKey,
       );
   const sendAmount = Number(transfer.sendAmount) || 0;
+  // "가장 경제적" 뱃지를 붙일 카드 (받는 돈이 가장 많은 카드)
+  const economicalKey = getEconomicalOptionKey(receiveOptions.options);
 
   // 선택한 받는 방법을 store 에 저장하고 다음 화면으로 이동합니다.
   const handleNext = () => {
@@ -152,6 +158,7 @@ function TransferPage() {
                   sendCurrency={receiveOptions.sendCurrency}
                   selected={getReceiveOptionKey(option) === selectedMethodKey}
                   error={amountError}
+                  badges={getOptionBadges(option, economicalKey)}
                   // TODO: 자세히 보기 모달로 교체
                   onDetailClick={() =>
                     alert(`${option.methodName} 자세히 보기 (모달 준비 중)`)

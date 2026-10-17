@@ -2,6 +2,8 @@ import type { ComponentPropsWithoutRef } from "react";
 import type { ReceiveOption } from "../types/receiveOption";
 import ArrivalIcon from "./icons/ArrivalIcon";
 import CheckIcon from "./icons/CheckIcon";
+import MethodBadge from "./MethodBadge";
+import type { MethodBadgeType } from "../utils/receiveOptionBadges";
 
 interface ReceiveMethodCardProps extends ComponentPropsWithoutRef<"div"> {
   option: ReceiveOption;
@@ -11,6 +13,7 @@ interface ReceiveMethodCardProps extends ComponentPropsWithoutRef<"div"> {
   onSelect?: () => void;
   onDetailClick?: () => void;
   error?: boolean;
+  badges?: MethodBadgeType[];
 }
 
 // "2026-10-15" 가 오늘인지 확인합니다.
@@ -44,6 +47,7 @@ function ReceiveMethodCard({
   onSelect,
   onDetailClick,
   error = false,
+  badges = [],
   className = "",
   ...props
 }: ReceiveMethodCardProps) {
@@ -81,7 +85,9 @@ function ReceiveMethodCard({
             <span className="text-body-1-bold text-text-secondary">
               {option.methodName}
             </span>
-            {/* TODO: 뱃지 */}
+            {badges.map((badge) => (
+              <MethodBadge key={badge} type={badge} />
+            ))}
           </div>
           {error ? (
             <span className="mt-(--unit-16) text-body-4-semibold text-text-alert">
