@@ -136,7 +136,7 @@ function TransferPage() {
             if (scrollTop > 0 && !collapsed) setCollapsed(true);
             if (scrollTop === 0 && collapsed) setCollapsed(false);
           }}
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-surface-default"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden bg-surface-default"
         >
           <TransferMethodTab
             value={methodTab}
