@@ -84,8 +84,8 @@ function TextField({
           disabled ? "cursor-not-allowed opacity-50" : ""
         }`}
       >
-        {floatingLabel && (
-          <label htmlFor={inputId} className={`text-caption-1-semibold ${labelColor}`}>
+        {floatingLabel && currentValue && (
+          <label htmlFor={inputId} className={`text-body-5-semibold ${labelColor}`}>
             {floatingLabel}
           </label>
         )}
@@ -99,7 +99,7 @@ function TextField({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onChange={handleChange}
-          className={`w-full bg-transparent text-body-1-bold outline-none placeholder:font-normal placeholder:text-text-disabled ${textColor}`}
+          className={`w-full bg-transparent text-body-1-semibold outline-none placeholder:font-normal placeholder:text-text-disabled ${textColor}`}
         />
       </div>
     </div>

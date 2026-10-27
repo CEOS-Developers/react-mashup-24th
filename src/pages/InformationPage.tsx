@@ -2,10 +2,28 @@ import { useState, type ChangeEvent } from "react";
 import { Navigate } from "react-router";
 import Button from "../components/Button";
 import Header from "../components/Header";
+import RecipientSelectField from "../components/w3/RecipientSelectField";
 import TextField, { MultiInputField } from "../components/TextField";
 import { CURRENCIES, isCurrencyCode } from "../constants/currencies";
 import { PATHS } from "../routes/paths";
 import { useTransferStore } from "../stores/useTransferStore";
+
+const NATIONALITY_OPTIONS = [
+  { label: "베트남", value: "베트남" },
+  { label: "기타", value: "기타" },
+] as const;
+
+const BANK_OPTIONS = [
+  "Agribank",
+  "Vietcombank",
+  "BIDV",
+  "Vietinbank",
+  "ABBank",
+  "ACB",
+  "ANZ",
+  "BacA Bank",
+  "Bank of China",
+].map((bank) => ({ label: bank, value: bank }));
 
 interface RecipientForm {
   nationality: string;
@@ -54,10 +72,6 @@ function InformationPage() {
       updateField(field, event.target.value.replace(/\D/g, ""));
     };
 
-  const showUnimplementedAlert = (fieldName: string) => {
-    window.alert(`${fieldName} 선택 기능은 아직 준비 중입니다.`);
-  };
-
   const handleNext = () => {
     const requiredFields = [
       form.nationality,
@@ -81,28 +95,31 @@ function InformationPage() {
       <Header title="수취인 정보" />
 
       <main className="flex min-h-0 w-[402px] flex-1 flex-col gap-gap-16 overflow-y-auto px-[20px] py-padding-wide [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <TextField
-          externalLabel="수취인 국적 (선택)"
+        <RecipientSelectField
+          label="수취인 국적 (선택)"
+          floatingLabel="국적 (선택)"
+          title="국적 (선택)"
           value={form.nationality}
           placeholder="선택해 주세요"
-          bordered
-          readOnly
-          onClick={() => showUnimplementedAlert("수취인 국적")}
-          className="w-full"
+          searchPlaceholder="국적 검색"
+          options={NATIONALITY_OPTIONS}
+          onChange={(nationality) => updateField("nationality", nationality)}
         />
 
-        <TextField
-          externalLabel="수취인 계좌은행"
+        <RecipientSelectField
+          label="수취인 계좌은행"
+          floatingLabel="은행"
+          title="은행"
           value={form.bank}
           placeholder="은행을 선택해 주세요"
-          bordered
-          readOnly
-          onClick={() => showUnimplementedAlert("수취인 계좌은행")}
-          className="w-full"
+          searchPlaceholder="은행 검색"
+          options={BANK_OPTIONS}
+          onChange={(bank) => updateField("bank", bank)}
         />
 
         <TextField
           externalLabel="계좌번호"
+          floatingLabel="계좌번호"
           value={form.accountNumber}
           placeholder="숫자만 입력"
           inputMode="numeric"
@@ -118,6 +135,7 @@ function InformationPage() {
             fields={[
               {
                 value: form.lastName,
+                floatingLabel: "성",
                 placeholder: "성",
                 autoComplete: "family-name",
                 bordered: true,
@@ -125,6 +143,7 @@ function InformationPage() {
               },
               {
                 value: form.middleName,
+                floatingLabel: "중간이름",
                 placeholder: "중간이름",
                 autoComplete: "additional-name",
                 bordered: true,
@@ -132,6 +151,7 @@ function InformationPage() {
               },
               {
                 value: form.firstName,
+                floatingLabel: "이름",
                 placeholder: "이름",
                 autoComplete: "given-name",
                 bordered: true,
@@ -151,30 +171,37 @@ function InformationPage() {
           >
             수취인 연락처
           </label>
-          <div className="flex min-h-[56px] items-center gap-gap-8 rounded-medium border border-border-default bg-surface-default px-padding-wide">
-            <span className="shrink-0 text-body-1-semibold text-text-secondary">
-              {phoneCode}
-            </span>
-            <input
-              id="recipient-phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel-national"
-              value={form.phoneNumber}
-              onChange={handleNumericInputChange("phoneNumber")}
-              placeholder="전화번호 입력"
-              className="min-w-0 flex-1 bg-transparent text-body-1-bold text-text-default outline-none placeholder:font-normal placeholder:text-text-disabled"
-            />
+          <div className="flex min-h-[56px] flex-col justify-center gap-gap-2 rounded-medium border border-border-default bg-surface-default px-padding-wide py-padding-medium">
+            {form.phoneNumber && (
+              <span className="text-body-5-semibold text-text-tertiary">
+                휴대폰 번호
+              </span>
+            )}
+            <div className="flex items-center gap-gap-8">
+              <span className="shrink-0 text-body-1-semibold text-text-secondary">
+                {phoneCode}
+              </span>
+              <input
+                id="recipient-phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
+                value={form.phoneNumber}
+                onChange={handleNumericInputChange("phoneNumber")}
+                placeholder="전화번호 입력"
+                className="min-w-0 flex-1 bg-transparent text-body-1-semibold text-text-default outline-none placeholder:font-normal placeholder:text-text-disabled"
+              />
+            </div>
           </div>
         </div>
 
         <TextField
           externalLabel="생년월일 (선택)"
+          floatingLabel="생년월일 (선택)"
           value={form.birthday}
-          placeholder="선택해 주세요"
+          placeholder="YYYY-MM-DD"
           bordered
-          readOnly
-          onClick={() => showUnimplementedAlert("생년월일")}
+          onChange={handleInputChange("birthday")}
           className="w-full"
         />
       </main>
