@@ -15,6 +15,7 @@ interface RecipientSelectFieldProps {
   searchPlaceholder: string;
   value: string;
   options: readonly RecipientSelectOption[];
+  disabled?: boolean;
   onChange: (value: string) => void;
 }
 
@@ -26,6 +27,7 @@ function RecipientSelectField({
   searchPlaceholder,
   value,
   options,
+  disabled = false,
   onChange,
 }: RecipientSelectFieldProps) {
   const [open, setOpen] = useState(false);
@@ -69,8 +71,11 @@ function RecipientSelectField({
           type="button"
           aria-haspopup="dialog"
           aria-expanded={open}
+          disabled={disabled}
           onClick={() => setOpen(true)}
-          className="flex min-h-[56px] w-full items-center gap-gap-8 rounded-medium border border-border-default bg-surface-default px-padding-wide py-padding-medium text-left"
+          className={`flex min-h-[56px] w-full items-center gap-gap-8 rounded-medium border border-border-default bg-surface-default px-padding-wide py-padding-medium text-left ${
+            disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+          }`}
         >
           <span className="flex flex-1 flex-col items-start">
             {value && (

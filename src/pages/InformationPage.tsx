@@ -5,25 +5,9 @@ import Header from "../components/Header";
 import RecipientSelectField from "../components/w3/RecipientSelectField";
 import TextField, { MultiInputField } from "../components/TextField";
 import { CURRENCIES, isCurrencyCode } from "../constants/currencies";
+import { RECIPIENT_COUNTRY_BANKS } from "../mocks/recipientOptions";
 import { PATHS } from "../routes/paths";
 import { useTransferStore } from "../stores/useTransferStore";
-
-const NATIONALITY_OPTIONS = [
-  { label: "베트남", value: "베트남" },
-  { label: "기타", value: "기타" },
-] as const;
-
-const BANK_OPTIONS = [
-  "Agribank",
-  "Vietcombank",
-  "BIDV",
-  "Vietinbank",
-  "ABBank",
-  "ACB",
-  "ANZ",
-  "BacA Bank",
-  "Bank of China",
-].map((bank) => ({ label: bank, value: bank }));
 
 interface RecipientForm {
   nationality: string;
@@ -56,6 +40,19 @@ function InformationPage() {
   const phoneCode = isCurrencyCode(transfer.toCurrency)
     ? CURRENCIES[transfer.toCurrency].phoneCode
     : "";
+  const receivingCountry = isCurrencyCode(transfer.toCurrency)
+    ? CURRENCIES[transfer.toCurrency].country
+    : "";
+  const nationalityOptions = [
+    ...(receivingCountry
+      ? [{ label: receivingCountry, value: receivingCountry }]
+      : []),
+    { label: "기타", value: "기타" },
+  ];
+  const bankOptions =
+    RECIPIENT_COUNTRY_BANKS.find(
+      ({ country }) => country === receivingCountry,
+    )?.banks.map((bank) => ({ label: bank, value: bank })) ?? [];
 
   const updateField = (field: keyof RecipientForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -102,7 +99,7 @@ function InformationPage() {
           value={form.nationality}
           placeholder="선택해 주세요"
           searchPlaceholder="국적 검색"
-          options={NATIONALITY_OPTIONS}
+          options={nationalityOptions}
           onChange={(nationality) => updateField("nationality", nationality)}
         />
 
@@ -113,7 +110,8 @@ function InformationPage() {
           value={form.bank}
           placeholder="은행을 선택해 주세요"
           searchPlaceholder="은행 검색"
-          options={BANK_OPTIONS}
+          options={bankOptions}
+          disabled={bankOptions.length === 0}
           onChange={(bank) => updateField("bank", bank)}
         />
 
