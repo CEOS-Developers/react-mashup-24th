@@ -4,12 +4,14 @@ import Button from "../Button";
 interface RecipientValidationModalProps {
   open: boolean;
   message: string;
+  variant?: "error" | "success";
   onClose: () => void;
 }
 
 function RecipientValidationModal({
   open,
   message,
+  variant = "error",
   onClose,
 }: RecipientValidationModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -26,7 +28,7 @@ function RecipientValidationModal({
   return (
     <dialog
       ref={dialogRef}
-      role="alertdialog"
+      role={variant === "error" ? "alertdialog" : "dialog"}
       aria-labelledby={messageId}
       onCancel={(event) => {
         event.preventDefault();
@@ -41,18 +43,33 @@ function RecipientValidationModal({
           viewBox="0 0 24 24"
           fill="none"
           aria-hidden="true"
-          className="text-[#FF6723]"
+          className={variant === "error" ? "text-[#FF6723]" : "text-[#00A991]"}
         >
-          <path
-            d="M10.268 3.75a2 2 0 0 1 3.464 0l8.196 14.2A2 2 0 0 1 20.196 21H3.804a2 2 0 0 1-1.732-3.05l8.196-14.2Z"
-            fill="currentColor"
-          />
-          <path
-            d="M12 8v5m0 3.25h.01"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
+          {variant === "error" ? (
+            <>
+              <path
+                d="M10.268 3.75a2 2 0 0 1 3.464 0l8.196 14.2A2 2 0 0 1 20.196 21H3.804a2 2 0 0 1-1.732-3.05l8.196-14.2Z"
+                fill="currentColor"
+              />
+              <path
+                d="M12 8v5m0 3.25h.01"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </>
+          ) : (
+            <>
+              <circle cx="12" cy="12" r="10" fill="currentColor" />
+              <path
+                d="m7.5 12.25 3 3 6-6.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </>
+          )}
         </svg>
 
         <p

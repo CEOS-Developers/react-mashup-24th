@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from "react";
-import { Navigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import Button from "../components/Button";
 import Header from "../components/Header";
 import RecipientSelectField from "../components/w3/RecipientSelectField";
@@ -36,11 +36,14 @@ const INITIAL_FORM: RecipientForm = {
 
 function InformationPage() {
   const transfer = useTransferStore((state) => state.transfer);
+  const resetTransfer = useTransferStore((state) => state.resetTransfer);
   const [form, setForm] = useState(INITIAL_FORM);
   const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
   const [validationMessage, setValidationMessage] = useState(
     "입력한 정보가 맞는지 다시 확인해주세요.",
   );
+  const navigate = useNavigate();
 
   if (!transfer?.receiveMethod) return <Navigate to={PATHS.HOME} replace />;
 
@@ -103,7 +106,13 @@ function InformationPage() {
       return;
     }
 
-    window.alert("다음 단계는 아직 준비 중입니다.");
+    setIsCompletionModalOpen(true);
+  };
+
+  const handleCompletionConfirm = () => {
+    setIsCompletionModalOpen(false);
+    resetTransfer();
+    navigate(PATHS.HOME, { replace: true });
   };
 
   return (
@@ -236,6 +245,12 @@ function InformationPage() {
         open={isValidationModalOpen}
         message={validationMessage}
         onClose={() => setIsValidationModalOpen(false)}
+      />
+      <RecipientValidationModal
+        open={isCompletionModalOpen}
+        message="수취인 정보 입력이 완료되었습니다."
+        variant="success"
+        onClose={handleCompletionConfirm}
       />
     </div>
   );
