@@ -1,4 +1,21 @@
+import { useState } from 'react';
+import MatchCard from '../components/match/MatchCard';
+import { mockMatches } from '../mocks/matches';
+
 function HomePage() {
+  const [favoriteIds, setFavoriteIds] = useState(
+    () => new Set(mockMatches.filter((match) => match.isFavorite).map((match) => match.id)),
+  );
+
+  const toggleFavorite = (id: string) => {
+    setFavoriteIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   return (
     <div className="text-fg-neutral-default">
       <section className="flex h-13 items-center bg-bg-neutral-weak px-4">
@@ -25,14 +42,17 @@ function HomePage() {
         </p>
       </section>
 
-      <ul className="space-y-3 px-4" aria-label="매치 리스트 자리표시자">
-        {Array.from({ length: 12 }, (_, index) => (
-          <li
-            key={index}
-            className="flex h-24 flex-col justify-center gap-1 rounded-medium border border-border-default bg-bg-neutral-weak px-4"
-          >
-            <h3 className="typo-body-medium-sb">매치 리스트 {index + 1}</h3>
-            <p className="typo-body-small-md text-fg-neutral-muted">스크롤 확인용 자리표시자</p>
+      <ul aria-label="소셜 매치 목록">
+        {mockMatches.map((match) => (
+          <li key={match.id}>
+            <MatchCard
+              match={match}
+              selected={favoriteIds.has(match.id)}
+              favoriteCount={
+                match.favoriteCount + Number(favoriteIds.has(match.id)) - Number(match.isFavorite)
+              }
+              onFavoriteClick={() => toggleFavorite(match.id)}
+            />
           </li>
         ))}
       </ul>
