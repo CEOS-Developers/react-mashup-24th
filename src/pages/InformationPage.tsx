@@ -3,6 +3,7 @@ import { Navigate } from "react-router";
 import Button from "../components/Button";
 import Header from "../components/Header";
 import RecipientSelectField from "../components/w3/RecipientSelectField";
+import RecipientValidationModal from "../components/w3/RecipientValidationModal";
 import TextField, { MultiInputField } from "../components/TextField";
 import { CURRENCIES, isCurrencyCode } from "../constants/currencies";
 import { RECIPIENT_COUNTRY_BANKS } from "../mocks/recipientOptions";
@@ -34,6 +35,10 @@ const INITIAL_FORM: RecipientForm = {
 function InformationPage() {
   const transfer = useTransferStore((state) => state.transfer);
   const [form, setForm] = useState(INITIAL_FORM);
+  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [validationMessage, setValidationMessage] = useState(
+    "입력한 정보가 맞는지 다시 확인해주세요.",
+  );
 
   if (!transfer?.receiveMethod) return <Navigate to={PATHS.HOME} replace />;
 
@@ -70,8 +75,13 @@ function InformationPage() {
     };
 
   const handleNext = () => {
+    if (form.nationality === "베트남" && !form.middleName.trim()) {
+      setValidationMessage("베트남 수취인은 중간이름을 입력해주세요.");
+      setIsValidationModalOpen(true);
+      return;
+    }
+
     const requiredFields = [
-      form.nationality,
       form.bank,
       form.accountNumber,
       form.lastName,
@@ -80,7 +90,8 @@ function InformationPage() {
     ];
 
     if (requiredFields.some((value) => !value.trim())) {
-      window.alert("필수 정보를 입력해주세요. 입력 오류 모달은 아직 준비 중입니다.");
+      setValidationMessage("입력한 정보가 맞는지 다시 확인해주세요.");
+      setIsValidationModalOpen(true);
       return;
     }
 
@@ -209,6 +220,12 @@ function InformationPage() {
           다음
         </Button>
       </footer>
+
+      <RecipientValidationModal
+        open={isValidationModalOpen}
+        message={validationMessage}
+        onClose={() => setIsValidationModalOpen(false)}
+      />
     </div>
   );
 }
