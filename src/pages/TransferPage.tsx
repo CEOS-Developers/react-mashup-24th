@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import Header from "../components/Header";
 import ExchangeRate from "../components/ExchangeRate";
 import TransferAmountFields from "../components/TransferAmountFields";
@@ -44,6 +44,7 @@ function TransferPage() {
   // 홈에서 송금하기를 눌렀을 때 저장한 송금 정보입니다. 이 페이지에서 바꾸면 바로 store 에 반영됩니다.
   const transfer = useTransferStore((state) => state.transfer);
   const setTransfer = useTransferStore((state) => state.setTransfer);
+  const navigate = useNavigate();
   const [openSheet, setOpenSheet] = useState<"from" | "to" | null>(null);
   const [methodTab, setMethodTab] = useState<TransferMethodTabValue>("rate");
   // 받는 방법 목록을 내리면 금액 카드를 한 줄 요약으로 줄이고, 맨 위로 올리면 다시 펼칩니다.
@@ -84,8 +85,7 @@ function TransferPage() {
   const handleNext = () => {
     if (!selectedOption) return;
     setTransfer({ ...transfer, receiveMethod: selectedOption });
-    // TODO: W-3 수취인 정보 페이지가 생기면 navigate 로 교체
-    alert("수취인 정보 페이지 준비 중");
+    navigate(PATHS.INFORMATION);
   };
 
   const updateTransfer = (patch: Partial<TransferInput>) => {

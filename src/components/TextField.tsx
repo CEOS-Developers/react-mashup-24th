@@ -11,6 +11,7 @@ export interface TextFieldProps
   externalLabel?: string;
   floatingLabel?: string;
   isError?: boolean;
+  bordered?: boolean;
   value?: string;
   defaultValue?: string;
 }
@@ -19,6 +20,7 @@ function TextField({
   externalLabel,
   floatingLabel,
   isError = false,
+  bordered = false,
   id,
   value,
   defaultValue = "",
@@ -63,7 +65,7 @@ function TextField({
     if (isFocused) {
       return "bg-surface-default border-solid border-border-focused line-weight-bold";
     }
-    return "bg-surface-default border-solid border-transparent line-weight-regular";
+    return `bg-surface-default border-solid ${bordered ? "border-border-default" : "border-transparent"} line-weight-regular`;
   };
 
   const labelColor = isError ? "text-text-alert" : "text-text-tertiary";
