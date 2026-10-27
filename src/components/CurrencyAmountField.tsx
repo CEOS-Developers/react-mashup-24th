@@ -91,7 +91,6 @@ function CurrencyAmountField({
             id={id}
             type="text"
             inputMode="numeric"
-            pattern="[0-9]*"
             autoComplete="off"
             value={formattedValue}
             placeholder="0"
