@@ -113,6 +113,7 @@ interface MultiInputFieldProps {
   isError?: boolean;
   disabled?: boolean;
   className?: string;
+  onCombinedChange?: (value: string) => void;
   /** 칸별로 따로 전달할 props (name, value, onChange, placeholder 등) */
   fields: TextFieldProps[];
 }
@@ -122,6 +123,7 @@ export function MultiInputField({
   isError = false,
   disabled = false,
   className = "w-[362px]",
+  onCombinedChange,
   fields,
 }: MultiInputFieldProps) {
   const labelId = useId();
@@ -145,6 +147,19 @@ export function MultiInputField({
             {...field}
             isError={isError || field.isError}
             disabled={disabled || field.disabled}
+            onChange={(event) => {
+              field.onChange?.(event);
+              const combinedValue = fields
+                .map((currentField, currentIndex) =>
+                  currentIndex === index
+                    ? event.currentTarget.value
+                    : currentField.value ?? currentField.defaultValue ?? "",
+                )
+                .map((value) => value.trim())
+                .filter(Boolean)
+                .join(" ");
+              onCombinedChange?.(combinedValue);
+            }}
             className={`h-[64px] flex-1 ${field.className ?? ""}`}
           />
         ))}

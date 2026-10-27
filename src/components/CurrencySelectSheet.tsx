@@ -53,7 +53,7 @@ function CurrencySelectSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative flex min-h-[356px] w-[402px] flex-col items-center rounded-t-large bg-surface-default px-[20px] pb-[40px]"
+        className="relative flex min-h-[356px] w-[402px] animate-[recipient-sheet-rise_240ms_ease-out] flex-col items-center rounded-t-large bg-surface-default px-[20px] pb-[40px] motion-reduce:animate-none"
       >
         <h2
           id={titleId}

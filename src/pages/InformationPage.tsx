@@ -17,6 +17,7 @@ interface RecipientForm {
   lastName: string;
   middleName: string;
   firstName: string;
+  englishName: string;
   phoneNumber: string;
   birthday: string;
 }
@@ -28,6 +29,7 @@ const INITIAL_FORM: RecipientForm = {
   lastName: "",
   middleName: "",
   firstName: "",
+  englishName: "",
   phoneNumber: "",
   birthday: "",
 };
@@ -66,6 +68,12 @@ function InformationPage() {
   const handleInputChange =
     (field: keyof RecipientForm) => (event: ChangeEvent<HTMLInputElement>) => {
       updateField(field, event.target.value);
+    };
+
+  const handleEnglishNameChange =
+    (field: "lastName" | "middleName" | "firstName") =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      updateField(field, event.target.value.replace(/[^a-z]/gi, ""));
     };
 
   const handleNumericInputChange =
@@ -141,6 +149,9 @@ function InformationPage() {
           <MultiInputField
             externalLabel="수취인 영문 이름"
             className="w-full"
+            onCombinedChange={(englishName) =>
+              updateField("englishName", englishName)
+            }
             fields={[
               {
                 value: form.lastName,
@@ -148,7 +159,7 @@ function InformationPage() {
                 placeholder: "성",
                 autoComplete: "family-name",
                 bordered: true,
-                onChange: handleInputChange("lastName"),
+                onChange: handleEnglishNameChange("lastName"),
               },
               {
                 value: form.middleName,
@@ -156,7 +167,7 @@ function InformationPage() {
                 placeholder: "중간이름",
                 autoComplete: "additional-name",
                 bordered: true,
-                onChange: handleInputChange("middleName"),
+                onChange: handleEnglishNameChange("middleName"),
               },
               {
                 value: form.firstName,
@@ -164,7 +175,7 @@ function InformationPage() {
                 placeholder: "이름",
                 autoComplete: "given-name",
                 bordered: true,
-                onChange: handleInputChange("firstName"),
+                onChange: handleEnglishNameChange("firstName"),
               },
             ]}
           />
