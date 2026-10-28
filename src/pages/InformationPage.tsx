@@ -143,7 +143,7 @@ function InformationPage() {
       setValidationMessage(
         error instanceof ApiError
           ? error.message
-          : "송금 이력 저장 결과를 확인하지 못했습니다. 송금 이력을 확인해주세요.",
+          : "서버가 불안정하여 송금에 실패했습니다.",
       );
       setIsValidationModalOpen(true);
     } finally {
