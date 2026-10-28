@@ -15,12 +15,14 @@ import {
   RECEIVE_METHOD_DETAIL_SECTIONS,
 } from "../mocks/receiveMethodDetails";
 import Button from "../components/Button";
-import { getMockReceiveOptions } from "../mocks/receiveOptions";
 import {
+  getReceiveMethodKey,
   getReceiveOptionKey,
+  isSelectableOption,
   type ReceiveOption,
 } from "../types/receiveOption";
-import { sortReceiveOptions } from "../utils/sortReceiveOptions";
+import { SORT_BY_TAB, sortReceiveOptions } from "../utils/sortReceiveOptions";
+import { useReceiveOptions } from "../hooks/useReceiveOptions";
 import {
   getEconomicalOptionKey,
   getOptionBadges,
@@ -43,6 +45,11 @@ type TransferInput = Pick<
   "fromCurrency" | "toCurrency" | "sendAmount"
 >;
 
+// 금액이 비었거나 0, 또는 KRW 5,000 미만이면 받는 방법 카드를 error 상태로 보여줍니다.
+const hasAmountError = (input: TransferInput) =>
+  !isValidAmount(input.sendAmount) ||
+  isBelowMinimum(input.fromCurrency, input.sendAmount);
+
 // 송금액 입력 및 받는 방법 선택 페이지 (W-2)
 function TransferPage() {
   // 홈에서 송금하기를 눌렀을 때 저장한 송금 정보입니다. 이 페이지에서 바꾸면 바로 store 에 반영됩니다.
@@ -56,6 +63,14 @@ function TransferPage() {
   const navigate = useNavigate();
   const [openSheet, setOpenSheet] = useState<"from" | "to" | null>(null);
   const [methodTab, setMethodTab] = useState<TransferMethodTabValue>("rate");
+  // 받는 방법 목록 (탭에 맞는 서버 정렬 기준으로 조회)
+  const { data: receiveOptionsData, isLoading: isOptionsLoading } =
+    useReceiveOptions(
+      transfer?.fromCurrency ?? "KRW",
+      transfer?.toCurrency ?? "VND",
+      transfer?.sendAmount ?? "",
+      SORT_BY_TAB[methodTab],
+    );
   // 받는 방법 목록을 내리면 금액 카드를 한 줄 요약으로 줄이고, 맨 위로 올리면 다시 펼칩니다.
   const [collapsed, setCollapsed] = useState(false);
   const [detailOption, setDetailOption] = useState<ReceiveOption | null>(null);
@@ -67,22 +82,17 @@ function TransferPage() {
   // 홈을 거치지 않고 들어오면 송금 정보가 없으므로 홈으로 돌려보냅니다.
   if (!transfer) return <Navigate to={PATHS.HOME} replace />;
 
-  const receiveOptions = getMockReceiveOptions(
-    transfer.fromCurrency,
-    transfer.toCurrency,
-    transfer.sendAmount,
-  ).result;
+  // 선택 불가 옵션(unselectableReason)은 금액 정보가 없고 디자인도 없어서 걸러냅니다.
+  const receiveOptions = (receiveOptionsData?.options ?? []).filter(
+    isSelectableOption,
+  );
 
-  // 금액이 비었거나 0, 또는 KRW 5,000 미만이면 받는 방법 카드를 error 상태로 보여줍니다.
-  const hasAmountError = (input: TransferInput) =>
-    !isValidAmount(input.sendAmount) ||
-    isBelowMinimum(input.fromCurrency, input.sendAmount);
   const amountError = hasAmountError(transfer);
 
   // error 가 아니고 카드를 하나 골랐을 때만 "다음" 버튼이 활성화됩니다.
   const selectedOption = amountError
     ? undefined
-    : receiveOptions.options.find(
+    : receiveOptions.find(
         (option) => getReceiveOptionKey(option) === selectedMethodKey,
       );
   const sendAmount = Number(transfer.sendAmount) || 0;
@@ -92,13 +102,19 @@ function TransferPage() {
     { region: "overseas", ...transfer },
     exchangeRate,
   );
-  const receiveAmount = quote?.receiveAmount ?? "";
-  // "가장 경제적" 뱃지를 붙일 카드 (받는 돈이 가장 많은 카드)
-  const economicalKey = getEconomicalOptionKey(receiveOptions.options);
+  // 카드를 고르면 서버가 계산한 그 방법의 받는 금액(totalAmount, 마진 반영)을, 고르기 전에는 환율 계산값을 보여줍니다.
+  const receiveAmount = selectedOption
+    ? String(selectedOption.totalAmount)
+    : (quote?.receiveAmount ?? "");
+  // "가장 경제적" 뱃지를 붙일 카드 (고정 수수료가 가장 낮은 카드)
+  const economicalKey = getEconomicalOptionKey(receiveOptions);
+
+  // 금액을 바꾼 직후 새 목록이 오기 전에는 이전 금액 기준 카드라서 "다음"을 막습니다.
+  const canProceed = selectedOption !== undefined && !isOptionsLoading;
 
   // 선택한 받는 방법과 그 시점의 환율 · 받는 금액을 store 에 저장하고 다음 화면으로 이동합니다.
   const handleNext = () => {
-    if (!selectedOption) return;
+    if (!canProceed) return;
     setTransfer({
       ...transfer,
       rate: quote?.rate ?? transfer.rate,
@@ -175,29 +191,26 @@ function TransferPage() {
             onChange={setMethodTab}
             className="sticky top-0 z-10"
           />
-          {/* TODO: API 연동 시 받는 방법 리스트 조회 응답으로 교체 */}
           <div
             role="radiogroup"
             aria-label="받는 방법"
             className="flex flex-1 flex-col items-center gap-gap-16 px-[20px] py-padding-wide"
           >
-            {sortReceiveOptions(receiveOptions.options, methodTab).map(
-              (option) => (
-                <ReceiveMethodCard
-                  key={getReceiveOptionKey(option)}
-                  option={option}
-                  sendAmount={sendAmount}
-                  sendCurrency={receiveOptions.sendCurrency}
-                  selected={getReceiveOptionKey(option) === selectedMethodKey}
-                  error={amountError}
-                  badges={getOptionBadges(option, economicalKey)}
-                  onDetailClick={() => setDetailOption(option)}
-                  onSelect={() =>
-                    setSelectedMethodKey(getReceiveOptionKey(option))
-                  }
-                />
-              ),
-            )}
+            {sortReceiveOptions(receiveOptions).map((option) => (
+              <ReceiveMethodCard
+                key={getReceiveOptionKey(option)}
+                option={option}
+                sendAmount={sendAmount}
+                sendCurrency={transfer.fromCurrency}
+                selected={getReceiveOptionKey(option) === selectedMethodKey}
+                error={amountError}
+                badges={getOptionBadges(option, economicalKey)}
+                onDetailClick={() => setDetailOption(option)}
+                onSelect={() =>
+                  setSelectedMethodKey(getReceiveOptionKey(option))
+                }
+              />
+            ))}
           </div>
         </section>
       </main>
@@ -205,7 +218,7 @@ function TransferPage() {
       {/* 하단 버튼: 화면 아래에 고정 */}
       <footer className="flex w-[402px] shrink-0 flex-col bg-surface-default">
         <div className="flex h-[108px] shrink-0 flex-col items-start px-[20px] py-padding-wide">
-          {selectedOption ? (
+          {canProceed ? (
             <Button size="lg" className="flex-col" onClick={handleNext}>
               <span>다음</span>
               <span className="text-body-5-regular">
@@ -232,7 +245,7 @@ function TransferPage() {
             transfer.toCurrency,
           )}
           sections={
-            RECEIVE_METHOD_DETAIL_SECTIONS[getReceiveOptionKey(detailOption)]
+            RECEIVE_METHOD_DETAIL_SECTIONS[getReceiveMethodKey(detailOption)]
           }
           onClose={() => setDetailOption(null)}
         />

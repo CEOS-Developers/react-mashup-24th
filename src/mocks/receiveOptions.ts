@@ -1,5 +1,13 @@
 import type { ApiResponse } from "../types/api";
-import type { ReceiveOptionsResult } from "../types/receiveOption";
+import type {
+  ReceiveOption,
+  ReceiveOptionsResult,
+} from "../types/receiveOption";
+
+// 목데이터는 선택 가능한 옵션만 있습니다.
+type MockReceiveOptionsResult = Omit<ReceiveOptionsResult, "options"> & {
+  options: ReceiveOption[];
+};
 import { getMockRate } from "./exchangeRates";
 
 // 오늘로부터 days 일 뒤 날짜를 "YYYY-MM-DD" 로 만듭니다. (날짜가 지나도 항상 같은 간격으로 보이게)
@@ -20,7 +28,7 @@ function daysFromToday(days: number) {
 //  - 빠른 도착(arrivalDate↑): ZaloPay > MoMo > 현금 수령 > 은행
 //  - 낮은 수수료(fixedFee↑):  현금 수령 > 은행 > MoMo > ZaloPay
 // 가장 경제적 뱃지(fixedFee 최저): 현금 수령
-export const MOCK_RECEIVE_OPTIONS_RESPONSE: ApiResponse<ReceiveOptionsResult> =
+export const MOCK_RECEIVE_OPTIONS_RESPONSE: ApiResponse<MockReceiveOptionsResult> =
   {
     isSuccess: true,
     code: "RECEIVE-OPTION200_1",
@@ -96,7 +104,7 @@ export function getMockReceiveOptions(
   fromCurrency: string,
   toCurrency: string,
   sendAmount: string,
-): ApiResponse<ReceiveOptionsResult> {
+): ApiResponse<MockReceiveOptionsResult> {
   const rate = getMockRate(fromCurrency, toCurrency);
   const feeRate = getMockRate("KRW", fromCurrency);
   const amount = Number(sendAmount);
