@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatDateKey } from '../utils/date';
-import Calendar from './home/components/Calendar';
+import Calendar from '../components/Calendar';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
@@ -22,8 +22,7 @@ function HomePage() {
           <p className="typo-body-small-md text-fg-neutral-muted">위 12px · 아래 16px</p>
         </div>
       </section>
-
-      <section className="sticky top-0 z-20 mb-3 flex h-31 flex-col justify-center gap-1 border-b border-border-default bg-bg-neutral-default">
+      <section className="sticky top-0 z-20 flex flex-col gap-5 bg-bg-neutral-default pb-5">    
         <Calendar selectedKey={selectedDate} onSelect={setSelectedDate} />
       </section>
 

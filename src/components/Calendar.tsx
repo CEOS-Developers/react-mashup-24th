@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { getCalendarDays } from '../../../utils/date';
+import { getCalendarDays } from '../utils/date';
 import DayButton from './DayButton';
 
 type CalendarProps = {
