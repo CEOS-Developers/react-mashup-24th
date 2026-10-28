@@ -25,7 +25,7 @@ import {
   getEconomicalOptionKey,
   getOptionBadges,
 } from "../utils/receiveOptionBadges";
-import { getMockQuote, getMockRate } from "../mocks/exchangeRates";
+import { getQuoteFromExchangeRate } from "../utils/exchangeRate";
 import {
   useTransferStore,
   type TransferInfo,
@@ -73,7 +73,6 @@ function TransferPage() {
     transfer.sendAmount,
   ).result;
 
-  // 금액·통화가 바뀌면 환율과 받는 금액을 다시 계산해서 store 에 저장합니다.
   // 금액이 비었거나 0, 또는 KRW 5,000 미만이면 받는 방법 카드를 error 상태로 보여줍니다.
   const hasAmountError = (input: TransferInput) =>
     !isValidAmount(input.sendAmount) ||
@@ -87,13 +86,25 @@ function TransferPage() {
         (option) => getReceiveOptionKey(option) === selectedMethodKey,
       );
   const sendAmount = Number(transfer.sendAmount) || 0;
+  // 받는 금액은 지금 통화 조합의 환율 API 결과로 매번 계산합니다.
+  // (통화를 바꾼 직후 새 환율을 불러오는 동안은 견적이 없어 0 으로 보입니다)
+  const quote = getQuoteFromExchangeRate(
+    { region: "overseas", ...transfer },
+    exchangeRate,
+  );
+  const receiveAmount = quote?.receiveAmount ?? "";
   // "가장 경제적" 뱃지를 붙일 카드 (받는 돈이 가장 많은 카드)
   const economicalKey = getEconomicalOptionKey(receiveOptions.options);
 
-  // 선택한 받는 방법을 store 에 저장하고 다음 화면으로 이동합니다.
+  // 선택한 받는 방법과 그 시점의 환율 · 받는 금액을 store 에 저장하고 다음 화면으로 이동합니다.
   const handleNext = () => {
     if (!selectedOption) return;
-    setTransfer({ ...transfer, receiveMethod: selectedOption });
+    setTransfer({
+      ...transfer,
+      rate: quote?.rate ?? transfer.rate,
+      receiveAmount,
+      receiveMethod: selectedOption,
+    });
     navigate(PATHS.INFORMATION);
   };
 
@@ -104,13 +115,8 @@ function TransferPage() {
       next.fromCurrency !== transfer.fromCurrency ||
       next.toCurrency !== transfer.toCurrency;
     if (hasAmountError(next) || currencyChanged) setSelectedMethodKey(null);
-    const quote = getMockQuote({ region: "overseas", ...next });
-    setTransfer({
-      ...next,
-      receiveMethod: undefined,
-      rate: getMockRate(next.fromCurrency, next.toCurrency) ?? next.rate,
-      receiveAmount: quote?.receiveAmount ?? "",
-    });
+    // 환율 · 받는 금액은 화면에서 계산하고, "다음"을 누를 때 store 에 저장합니다.
+    setTransfer({ ...next, receiveMethod: undefined });
   };
 
   return (
@@ -133,7 +139,7 @@ function TransferPage() {
               fromCurrency={transfer.fromCurrency}
               toCurrency={transfer.toCurrency}
               sendAmount={transfer.sendAmount}
-              receiveAmount={transfer.receiveAmount}
+              receiveAmount={receiveAmount}
             />
           ) : (
             <TransferAmountFields
@@ -141,7 +147,7 @@ function TransferPage() {
               fromCurrency={transfer.fromCurrency}
               toCurrency={transfer.toCurrency}
               sendAmount={transfer.sendAmount}
-              receiveAmount={transfer.receiveAmount}
+              receiveAmount={receiveAmount}
               onSendAmountChange={(sendAmount) =>
                 updateTransfer({ sendAmount })
               }
@@ -241,7 +247,7 @@ function TransferPage() {
           updateTransfer({ fromCurrency });
           setOpenSheet(null);
         }}
-        disabledCurrencies={["VND"]}
+        disabledCurrencies={["VND", "SGD", "IDR"]}
       />
       <CurrencySelectSheet
         open={openSheet === "to"}
