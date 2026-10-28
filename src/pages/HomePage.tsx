@@ -7,9 +7,10 @@ import CardTransfer, {
   type TransferQuote,
 } from "../components/w1/CardTransfer";
 import CurrencySelectSheet from "../components/CurrencySelectSheet";
-import { getMockQuote, getMockRate } from "../mocks/exchangeRates";
+import { getQuoteFromExchangeRate } from "../utils/exchangeRate";
 import { useTransferStore } from "../stores/useTransferStore";
 import { PATHS } from "../routes/paths";
+import { useExchangeRate } from "../hooks/useExchangeRate";
 
 // 임시 잔액입니다. API 연동 시 계좌 잔액 응답값으로 교체합니다.
 const MOCK_WALLET_BALANCE = 10000;
@@ -26,7 +27,12 @@ function HomePage() {
   const setTransfer = useTransferStore((state) => state.setTransfer);
   const navigate = useNavigate();
 
-  const quote = getMockQuote(draft);
+  const { data: exchangeRate } = useExchangeRate(
+    draft.fromCurrency,
+    draft.toCurrency,
+  );
+  // 받는 금액은 환율 API 의 rate 로 계산합니다. (불러오는 중이거나 실패하면 견적 없음 → 0 표시, 송금하기 비활성)
+  const quote = getQuoteFromExchangeRate(draft, exchangeRate);
 
   // 송금 정보를 전역 상태에 저장하고 다음 화면으로 이동합니다.
   const handleSubmit = (
@@ -54,7 +60,7 @@ function HomePage() {
           onChange={setDraft}
           walletBalance={MOCK_WALLET_BALANCE.toLocaleString("ko-KR")}
           quote={quote}
-          indicativeRate={getMockRate(draft.fromCurrency, draft.toCurrency)}
+          exchangeRate={exchangeRate}
           // 해외일 때만 송금하기를 활성화합니다.
           onSubmit={draft.region === "overseas" ? handleSubmit : undefined}
           onFromCurrencyClick={() => setOpenSheet("from")}
@@ -69,7 +75,7 @@ function HomePage() {
         title="보내는 국가 / 통화"
         value={draft.fromCurrency}
         onChange={(fromCurrency) => setDraft({ ...draft, fromCurrency })}
-        disabledCurrencies={["VND"]}
+        disabledCurrencies={["VND", "SGD", "IDR"]}
       />
       <CurrencySelectSheet
         open={openSheet === "to"}

@@ -1,4 +1,5 @@
-import type { ApiResponse, ReceiveOptionsResult } from "../types/receiveOption";
+import type { ApiResponse } from "../types/api";
+import type { ReceiveOptionsResult } from "../types/receiveOption";
 import { getMockRate } from "./exchangeRates";
 
 // 오늘로부터 days 일 뒤 날짜를 "YYYY-MM-DD" 로 만듭니다. (날짜가 지나도 항상 같은 간격으로 보이게)
@@ -106,7 +107,9 @@ export function getMockReceiveOptions(
     .map((option) => ({
       ...option,
       fixedFee: Math.round(option.fixedFee * (feeRate ?? 0) * 100) / 100,
-      totalAmount: Math.round(validAmount * (rate ?? 0) * (1 - option.rateMargin) * 100) / 100,
+      totalAmount:
+        Math.round(validAmount * (rate ?? 0) * (1 - option.rateMargin) * 100) /
+        100,
     }));
 
   return {

@@ -16,18 +16,22 @@ import {
 } from "../mocks/receiveMethodDetails";
 import Button from "../components/Button";
 import { getMockReceiveOptions } from "../mocks/receiveOptions";
-import { getReceiveOptionKey, type ReceiveOption } from "../types/receiveOption";
+import {
+  getReceiveOptionKey,
+  type ReceiveOption,
+} from "../types/receiveOption";
 import { sortReceiveOptions } from "../utils/sortReceiveOptions";
 import {
   getEconomicalOptionKey,
   getOptionBadges,
 } from "../utils/receiveOptionBadges";
-import { getMockQuote, getMockRate } from "../mocks/exchangeRates";
+import { getQuoteFromExchangeRate } from "../utils/exchangeRate";
 import {
   useTransferStore,
   type TransferInfo,
 } from "../stores/useTransferStore";
 import { PATHS } from "../routes/paths";
+import { useExchangeRate } from "../hooks/useExchangeRate";
 import {
   MIN_SEND_AMOUNT_MESSAGE,
   isBelowMinimum,
@@ -43,6 +47,11 @@ type TransferInput = Pick<
 function TransferPage() {
   // 홈에서 송금하기를 눌렀을 때 저장한 송금 정보입니다. 이 페이지에서 바꾸면 바로 store 에 반영됩니다.
   const transfer = useTransferStore((state) => state.transfer);
+  // 헤더 환율 칩용 환율입니다. (홈을 거치지 않아 transfer 가 없을 때도 훅 순서를 지키려고 기본값 사용)
+  const { data: exchangeRate } = useExchangeRate(
+    transfer?.fromCurrency ?? "KRW",
+    transfer?.toCurrency ?? "VND",
+  );
   const setTransfer = useTransferStore((state) => state.setTransfer);
   const navigate = useNavigate();
   const [openSheet, setOpenSheet] = useState<"from" | "to" | null>(null);
@@ -64,7 +73,6 @@ function TransferPage() {
     transfer.sendAmount,
   ).result;
 
-  // 금액·통화가 바뀌면 환율과 받는 금액을 다시 계산해서 store 에 저장합니다.
   // 금액이 비었거나 0, 또는 KRW 5,000 미만이면 받는 방법 카드를 error 상태로 보여줍니다.
   const hasAmountError = (input: TransferInput) =>
     !isValidAmount(input.sendAmount) ||
@@ -78,40 +86,50 @@ function TransferPage() {
         (option) => getReceiveOptionKey(option) === selectedMethodKey,
       );
   const sendAmount = Number(transfer.sendAmount) || 0;
+  // 받는 금액은 지금 통화 조합의 환율 API 결과로 매번 계산합니다.
+  // (통화를 바꾼 직후 새 환율을 불러오는 동안은 견적이 없어 0 으로 보입니다)
+  const quote = getQuoteFromExchangeRate(
+    { region: "overseas", ...transfer },
+    exchangeRate,
+  );
+  const receiveAmount = quote?.receiveAmount ?? "";
   // "가장 경제적" 뱃지를 붙일 카드 (받는 돈이 가장 많은 카드)
   const economicalKey = getEconomicalOptionKey(receiveOptions.options);
 
-  // 선택한 받는 방법을 store 에 저장하고 다음 화면으로 이동합니다.
+  // 선택한 받는 방법과 그 시점의 환율 · 받는 금액을 store 에 저장하고 다음 화면으로 이동합니다.
   const handleNext = () => {
     if (!selectedOption) return;
-    setTransfer({ ...transfer, receiveMethod: selectedOption });
+    setTransfer({
+      ...transfer,
+      rate: quote?.rate ?? transfer.rate,
+      receiveAmount,
+      receiveMethod: selectedOption,
+    });
     navigate(PATHS.INFORMATION);
   };
 
   const updateTransfer = (patch: Partial<TransferInput>) => {
     const next = { ...transfer, ...patch };
     // error 가 되면 선택한 카드를 풀어줍니다.
-    const currencyChanged = next.fromCurrency !== transfer.fromCurrency ||
+    const currencyChanged =
+      next.fromCurrency !== transfer.fromCurrency ||
       next.toCurrency !== transfer.toCurrency;
     if (hasAmountError(next) || currencyChanged) setSelectedMethodKey(null);
-    const quote = getMockQuote({ region: "overseas", ...next });
-    setTransfer({
-      ...next,
-      receiveMethod: undefined,
-      rate: getMockRate(next.fromCurrency, next.toCurrency) ?? next.rate,
-      receiveAmount: quote?.receiveAmount ?? "",
-    });
+    // 환율 · 받는 금액은 화면에서 계산하고, "다음"을 누를 때 store 에 저장합니다.
+    setTransfer({ ...next, receiveMethod: undefined });
   };
 
   return (
     // 헤더 · 금액 영역 · 하단 버튼은 고정하고, 탭 + 받는 방법 목록만 스크롤됩니다.
     <div className="flex h-dvh flex-col items-center overflow-hidden bg-[#F6F8FB]">
       <Header>
-        <ExchangeRate
-          fromCurrency={transfer.fromCurrency}
-          toCurrency={transfer.toCurrency}
-          rate={transfer.rate}
-        />
+        {exchangeRate && (
+          <ExchangeRate
+            fromCurrency={exchangeRate.from}
+            toCurrency={exchangeRate.to}
+            rate={exchangeRate.rate}
+          />
+        )}
       </Header>
 
       <main className="flex min-h-0 w-[402px] flex-1 flex-col">
@@ -121,7 +139,7 @@ function TransferPage() {
               fromCurrency={transfer.fromCurrency}
               toCurrency={transfer.toCurrency}
               sendAmount={transfer.sendAmount}
-              receiveAmount={transfer.receiveAmount}
+              receiveAmount={receiveAmount}
             />
           ) : (
             <TransferAmountFields
@@ -129,7 +147,7 @@ function TransferPage() {
               fromCurrency={transfer.fromCurrency}
               toCurrency={transfer.toCurrency}
               sendAmount={transfer.sendAmount}
-              receiveAmount={transfer.receiveAmount}
+              receiveAmount={receiveAmount}
               onSendAmountChange={(sendAmount) =>
                 updateTransfer({ sendAmount })
               }
@@ -209,8 +227,13 @@ function TransferPage() {
       {detailOption && (
         <ReceiveMethodDetailModal
           methodName={detailOption.methodName}
-          notices={getMockReceiveNotices(transfer.fromCurrency, transfer.toCurrency)}
-          sections={RECEIVE_METHOD_DETAIL_SECTIONS[getReceiveOptionKey(detailOption)]}
+          notices={getMockReceiveNotices(
+            transfer.fromCurrency,
+            transfer.toCurrency,
+          )}
+          sections={
+            RECEIVE_METHOD_DETAIL_SECTIONS[getReceiveOptionKey(detailOption)]
+          }
           onClose={() => setDetailOption(null)}
         />
       )}
@@ -224,7 +247,7 @@ function TransferPage() {
           updateTransfer({ fromCurrency });
           setOpenSheet(null);
         }}
-        disabledCurrencies={["VND"]}
+        disabledCurrencies={["VND", "SGD", "IDR"]}
       />
       <CurrencySelectSheet
         open={openSheet === "to"}
