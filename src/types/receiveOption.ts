@@ -22,13 +22,6 @@ export interface ReceiveOptionsResult {
   options: ReceiveOption[];
 }
 
-export interface ApiResponse<T> {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: T;
-}
-
 // 카드 key 로 쓰는 값입니다. (API 에 id 가 없어서 methodType + methodProvider 조합 사용)
 export const getReceiveOptionKey = (option: ReceiveOption) =>
   `${option.methodType}-${option.methodProvider}`;

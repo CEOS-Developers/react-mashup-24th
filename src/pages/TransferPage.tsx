@@ -16,7 +16,10 @@ import {
 } from "../mocks/receiveMethodDetails";
 import Button from "../components/Button";
 import { getMockReceiveOptions } from "../mocks/receiveOptions";
-import { getReceiveOptionKey, type ReceiveOption } from "../types/receiveOption";
+import {
+  getReceiveOptionKey,
+  type ReceiveOption,
+} from "../types/receiveOption";
 import { sortReceiveOptions } from "../utils/sortReceiveOptions";
 import {
   getEconomicalOptionKey,
@@ -28,6 +31,7 @@ import {
   type TransferInfo,
 } from "../stores/useTransferStore";
 import { PATHS } from "../routes/paths";
+import { useExchangeRate } from "../hooks/useExchangeRate";
 import {
   MIN_SEND_AMOUNT_MESSAGE,
   isBelowMinimum,
@@ -43,6 +47,11 @@ type TransferInput = Pick<
 function TransferPage() {
   // 홈에서 송금하기를 눌렀을 때 저장한 송금 정보입니다. 이 페이지에서 바꾸면 바로 store 에 반영됩니다.
   const transfer = useTransferStore((state) => state.transfer);
+  // 헤더 환율 칩용 환율입니다. (홈을 거치지 않아 transfer 가 없을 때도 훅 순서를 지키려고 기본값 사용)
+  const { data: exchangeRate } = useExchangeRate(
+    transfer?.fromCurrency ?? "KRW",
+    transfer?.toCurrency ?? "VND",
+  );
   const setTransfer = useTransferStore((state) => state.setTransfer);
   const navigate = useNavigate();
   const [openSheet, setOpenSheet] = useState<"from" | "to" | null>(null);
@@ -91,7 +100,8 @@ function TransferPage() {
   const updateTransfer = (patch: Partial<TransferInput>) => {
     const next = { ...transfer, ...patch };
     // error 가 되면 선택한 카드를 풀어줍니다.
-    const currencyChanged = next.fromCurrency !== transfer.fromCurrency ||
+    const currencyChanged =
+      next.fromCurrency !== transfer.fromCurrency ||
       next.toCurrency !== transfer.toCurrency;
     if (hasAmountError(next) || currencyChanged) setSelectedMethodKey(null);
     const quote = getMockQuote({ region: "overseas", ...next });
@@ -107,11 +117,13 @@ function TransferPage() {
     // 헤더 · 금액 영역 · 하단 버튼은 고정하고, 탭 + 받는 방법 목록만 스크롤됩니다.
     <div className="flex h-dvh flex-col items-center overflow-hidden bg-[#F6F8FB]">
       <Header>
-        <ExchangeRate
-          fromCurrency={transfer.fromCurrency}
-          toCurrency={transfer.toCurrency}
-          rate={transfer.rate}
-        />
+        {exchangeRate && (
+          <ExchangeRate
+            fromCurrency={exchangeRate.from}
+            toCurrency={exchangeRate.to}
+            rate={exchangeRate.rate}
+          />
+        )}
       </Header>
 
       <main className="flex min-h-0 w-[402px] flex-1 flex-col">
@@ -209,8 +221,13 @@ function TransferPage() {
       {detailOption && (
         <ReceiveMethodDetailModal
           methodName={detailOption.methodName}
-          notices={getMockReceiveNotices(transfer.fromCurrency, transfer.toCurrency)}
-          sections={RECEIVE_METHOD_DETAIL_SECTIONS[getReceiveOptionKey(detailOption)]}
+          notices={getMockReceiveNotices(
+            transfer.fromCurrency,
+            transfer.toCurrency,
+          )}
+          sections={
+            RECEIVE_METHOD_DETAIL_SECTIONS[getReceiveOptionKey(detailOption)]
+          }
           onClose={() => setDetailOption(null)}
         />
       )}

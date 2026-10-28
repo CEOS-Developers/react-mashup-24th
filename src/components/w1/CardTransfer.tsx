@@ -1,5 +1,6 @@
 import Toggle, { type ToggleValue } from "./Toggle";
 import ExchangeRate from "../ExchangeRate";
+import type { ExchangeRate as ExchangeRateInfo } from "../../types/exchangeRate";
 import Button from "../Button";
 import Wallet from "../icons/Wallet";
 import TransferAmountFields from "../TransferAmountFields";
@@ -34,6 +35,8 @@ interface CardTransferProps {
   walletBalance: string;
   quote?: TransferQuote;
   indicativeRate?: number;
+  // 환율 조회 API 결과입니다. 있으면 환율 칩에 API 의 from / to / rate 를 그대로 보여줍니다.
+  exchangeRate?: ExchangeRateInfo;
   isQuoteLoading?: boolean;
   isSubmitting?: boolean;
   error?: string;
@@ -48,6 +51,7 @@ function CardTransfer({
   walletBalance,
   quote,
   indicativeRate,
+  exchangeRate,
   isQuoteLoading = false,
   isSubmitting = false,
   error,
@@ -95,13 +99,22 @@ function CardTransfer({
         <div className="flex min-h-[180px] flex-col justify-center gap-gap-12">
           {overseas ? (
             <>
-              {rate !== undefined && (
+              {exchangeRate ? (
                 <ExchangeRate
-                  fromCurrency={value.fromCurrency}
-                  toCurrency={value.toCurrency}
-                  rate={rate}
+                  fromCurrency={exchangeRate.from}
+                  toCurrency={exchangeRate.to}
+                  rate={exchangeRate.rate}
                   className="w-full"
                 />
+              ) : (
+                rate !== undefined && (
+                  <ExchangeRate
+                    fromCurrency={value.fromCurrency}
+                    toCurrency={value.toCurrency}
+                    rate={rate}
+                    className="w-full"
+                  />
+                )
               )}
               <TransferAmountFields
                 fromCurrency={value.fromCurrency}
