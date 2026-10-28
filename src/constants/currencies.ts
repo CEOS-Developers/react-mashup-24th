@@ -4,10 +4,10 @@ import idrFlag from "../assets/flags/indonesia.png";
 import vndFlag from "../assets/flags/vietnam.png";
 
 export const CURRENCIES = {
-  KRW: { country: "한국", name: "대한민국 원", flag: krwFlag },
-  SGD: { country: "싱가포르", name: "싱가포르 달러", flag: sgdFlag },
-  IDR: { country: "인도네시아", name: "인도네시아 루피아", flag: idrFlag },
-  VND: { country: "베트남", name: "베트남 동", flag: vndFlag },
+  KRW: { country: "한국", name: "대한민국 원", flag: krwFlag, phoneCode: "+82" },
+  SGD: { country: "싱가포르", name: "싱가포르 달러", flag: sgdFlag, phoneCode: "+65" },
+  IDR: { country: "인도네시아", name: "인도네시아 루피아", flag: idrFlag, phoneCode: "+62" },
+  VND: { country: "베트남", name: "베트남 동", flag: vndFlag, phoneCode: "+84" },
 } as const;
 
 export type CurrencyCode = keyof typeof CURRENCIES;

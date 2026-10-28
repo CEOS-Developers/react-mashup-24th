@@ -1,4 +1,5 @@
 import type { ApiResponse, ReceiveOptionsResult } from "../types/receiveOption";
+import { getMockRate } from "./exchangeRates";
 
 // 오늘로부터 days 일 뒤 날짜를 "YYYY-MM-DD" 로 만듭니다. (날짜가 지나도 항상 같은 간격으로 보이게)
 function daysFromToday(days: number) {
@@ -87,3 +88,34 @@ export const MOCK_RECEIVE_OPTIONS_RESPONSE: ApiResponse<ReceiveOptionsResult> =
       ],
     },
   };
+
+// 기존 응답을 UI용 템플릿으로 사용하고 선택한 통화·금액으로 견적을 만듭니다.
+// 수수료는 KRW 기준 목데이터를 보내는 통화로 환산한 임시 값입니다.
+export function getMockReceiveOptions(
+  fromCurrency: string,
+  toCurrency: string,
+  sendAmount: string,
+): ApiResponse<ReceiveOptionsResult> {
+  const rate = getMockRate(fromCurrency, toCurrency);
+  const feeRate = getMockRate("KRW", fromCurrency);
+  const amount = Number(sendAmount);
+  const validAmount = Number.isFinite(amount) && amount > 0 ? amount : 0;
+  const options = MOCK_RECEIVE_OPTIONS_RESPONSE.result.options
+    // MoMo와 ZaloPay는 베트남 전용 목데이터입니다.
+    .filter((option) => toCurrency === "VND" || option.methodType !== "WALLET")
+    .map((option) => ({
+      ...option,
+      fixedFee: Math.round(option.fixedFee * (feeRate ?? 0) * 100) / 100,
+      totalAmount: Math.round(validAmount * (rate ?? 0) * (1 - option.rateMargin) * 100) / 100,
+    }));
+
+  return {
+    ...MOCK_RECEIVE_OPTIONS_RESPONSE,
+    result: {
+      sendCurrency: fromCurrency,
+      receiveCurrency: toCurrency,
+      sendAmount: validAmount,
+      options: rate === undefined || feeRate === undefined ? [] : options,
+    },
+  };
+}

@@ -11,6 +11,7 @@ export interface TextFieldProps
   externalLabel?: string;
   floatingLabel?: string;
   isError?: boolean;
+  bordered?: boolean;
   value?: string;
   defaultValue?: string;
 }
@@ -19,6 +20,7 @@ function TextField({
   externalLabel,
   floatingLabel,
   isError = false,
+  bordered = false,
   id,
   value,
   defaultValue = "",
@@ -63,7 +65,7 @@ function TextField({
     if (isFocused) {
       return "bg-surface-default border-solid border-border-focused line-weight-bold";
     }
-    return "bg-surface-default border-solid border-transparent line-weight-regular";
+    return `bg-surface-default border-solid ${bordered ? "border-border-default" : "border-transparent"} line-weight-regular`;
   };
 
   const labelColor = isError ? "text-text-alert" : "text-text-tertiary";
@@ -82,8 +84,8 @@ function TextField({
           disabled ? "cursor-not-allowed opacity-50" : ""
         }`}
       >
-        {floatingLabel && (
-          <label htmlFor={inputId} className={`text-caption-1-semibold ${labelColor}`}>
+        {floatingLabel && currentValue && (
+          <label htmlFor={inputId} className={`text-body-5-semibold ${labelColor}`}>
             {floatingLabel}
           </label>
         )}
@@ -97,7 +99,7 @@ function TextField({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onChange={handleChange}
-          className={`w-full bg-transparent text-body-1-bold outline-none placeholder:font-normal placeholder:text-text-disabled ${textColor}`}
+          className={`w-full bg-transparent text-body-1-semibold outline-none placeholder:font-normal placeholder:text-text-disabled ${textColor}`}
         />
       </div>
     </div>
@@ -111,6 +113,7 @@ interface MultiInputFieldProps {
   isError?: boolean;
   disabled?: boolean;
   className?: string;
+  onCombinedChange?: (value: string) => void;
   /** 칸별로 따로 전달할 props (name, value, onChange, placeholder 등) */
   fields: TextFieldProps[];
 }
@@ -120,6 +123,7 @@ export function MultiInputField({
   isError = false,
   disabled = false,
   className = "w-[362px]",
+  onCombinedChange,
   fields,
 }: MultiInputFieldProps) {
   const labelId = useId();
@@ -143,6 +147,19 @@ export function MultiInputField({
             {...field}
             isError={isError || field.isError}
             disabled={disabled || field.disabled}
+            onChange={(event) => {
+              field.onChange?.(event);
+              const combinedValue = fields
+                .map((currentField, currentIndex) =>
+                  currentIndex === index
+                    ? event.currentTarget.value
+                    : currentField.value ?? currentField.defaultValue ?? "",
+                )
+                .map((value) => value.trim())
+                .filter(Boolean)
+                .join(" ");
+              onCombinedChange?.(combinedValue);
+            }}
             className={`h-[64px] flex-1 ${field.className ?? ""}`}
           />
         ))}

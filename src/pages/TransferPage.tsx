@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import Header from "../components/Header";
 import ExchangeRate from "../components/ExchangeRate";
 import TransferAmountFields from "../components/TransferAmountFields";
@@ -9,9 +9,14 @@ import TransferMethodTab, {
   type TransferMethodTabValue,
 } from "../components/w2/TransferMethodTab";
 import ReceiveMethodCard from "../components/w2/ReceiveMethodCard";
+import ReceiveMethodDetailModal from "../components/w2/ReceiveMethodDetailModal";
+import {
+  getMockReceiveNotices,
+  RECEIVE_METHOD_DETAIL_SECTIONS,
+} from "../mocks/receiveMethodDetails";
 import Button from "../components/Button";
-import { MOCK_RECEIVE_OPTIONS_RESPONSE } from "../mocks/receiveOptions";
-import { getReceiveOptionKey } from "../types/receiveOption";
+import { getMockReceiveOptions } from "../mocks/receiveOptions";
+import { getReceiveOptionKey, type ReceiveOption } from "../types/receiveOption";
 import { sortReceiveOptions } from "../utils/sortReceiveOptions";
 import {
   getEconomicalOptionKey,
@@ -39,11 +44,12 @@ function TransferPage() {
   // 홈에서 송금하기를 눌렀을 때 저장한 송금 정보입니다. 이 페이지에서 바꾸면 바로 store 에 반영됩니다.
   const transfer = useTransferStore((state) => state.transfer);
   const setTransfer = useTransferStore((state) => state.setTransfer);
+  const navigate = useNavigate();
   const [openSheet, setOpenSheet] = useState<"from" | "to" | null>(null);
   const [methodTab, setMethodTab] = useState<TransferMethodTabValue>("rate");
   // 받는 방법 목록을 내리면 금액 카드를 한 줄 요약으로 줄이고, 맨 위로 올리면 다시 펼칩니다.
   const [collapsed, setCollapsed] = useState(false);
-  const receiveOptions = MOCK_RECEIVE_OPTIONS_RESPONSE.result;
+  const [detailOption, setDetailOption] = useState<ReceiveOption | null>(null);
   // 선택한 받는 방법 카드의 key 입니다. 처음에는 아무것도 선택되지 않고, 카드를 누르면 선택됩니다.
   const [selectedMethodKey, setSelectedMethodKey] = useState<string | null>(
     null,
@@ -51,6 +57,12 @@ function TransferPage() {
 
   // 홈을 거치지 않고 들어오면 송금 정보가 없으므로 홈으로 돌려보냅니다.
   if (!transfer) return <Navigate to={PATHS.HOME} replace />;
+
+  const receiveOptions = getMockReceiveOptions(
+    transfer.fromCurrency,
+    transfer.toCurrency,
+    transfer.sendAmount,
+  ).result;
 
   // 금액·통화가 바뀌면 환율과 받는 금액을 다시 계산해서 store 에 저장합니다.
   // 금액이 비었거나 0, 또는 KRW 5,000 미만이면 받는 방법 카드를 error 상태로 보여줍니다.
@@ -73,17 +85,19 @@ function TransferPage() {
   const handleNext = () => {
     if (!selectedOption) return;
     setTransfer({ ...transfer, receiveMethod: selectedOption });
-    // TODO: W-3 수취인 정보 페이지가 생기면 navigate 로 교체
-    alert("수취인 정보 페이지 준비 중");
+    navigate(PATHS.INFORMATION);
   };
 
   const updateTransfer = (patch: Partial<TransferInput>) => {
     const next = { ...transfer, ...patch };
     // error 가 되면 선택한 카드를 풀어줍니다.
-    if (hasAmountError(next)) setSelectedMethodKey(null);
+    const currencyChanged = next.fromCurrency !== transfer.fromCurrency ||
+      next.toCurrency !== transfer.toCurrency;
+    if (hasAmountError(next) || currencyChanged) setSelectedMethodKey(null);
     const quote = getMockQuote({ region: "overseas", ...next });
     setTransfer({
       ...next,
+      receiveMethod: undefined,
       rate: getMockRate(next.fromCurrency, next.toCurrency) ?? next.rate,
       receiveAmount: quote?.receiveAmount ?? "",
     });
@@ -159,10 +173,7 @@ function TransferPage() {
                   selected={getReceiveOptionKey(option) === selectedMethodKey}
                   error={amountError}
                   badges={getOptionBadges(option, economicalKey)}
-                  // TODO: 자세히 보기 모달로 교체
-                  onDetailClick={() =>
-                    alert(`${option.methodName} 자세히 보기 (모달 준비 중)`)
-                  }
+                  onDetailClick={() => setDetailOption(option)}
                   onSelect={() =>
                     setSelectedMethodKey(getReceiveOptionKey(option))
                   }
@@ -195,12 +206,24 @@ function TransferPage() {
         <div aria-hidden="true" className="h-(--unit-24)" />
       </footer>
 
+      {detailOption && (
+        <ReceiveMethodDetailModal
+          methodName={detailOption.methodName}
+          notices={getMockReceiveNotices(transfer.fromCurrency, transfer.toCurrency)}
+          sections={RECEIVE_METHOD_DETAIL_SECTIONS[getReceiveOptionKey(detailOption)]}
+          onClose={() => setDetailOption(null)}
+        />
+      )}
+
       <CurrencySelectSheet
         open={openSheet === "from"}
         onClose={() => setOpenSheet(null)}
         title="보내는 국가 / 통화"
         value={transfer.fromCurrency}
-        onChange={(fromCurrency) => updateTransfer({ fromCurrency })}
+        onChange={(fromCurrency) => {
+          updateTransfer({ fromCurrency });
+          setOpenSheet(null);
+        }}
         disabledCurrencies={["VND"]}
       />
       <CurrencySelectSheet
@@ -208,7 +231,10 @@ function TransferPage() {
         onClose={() => setOpenSheet(null)}
         title="받는 국가 / 통화"
         value={transfer.toCurrency}
-        onChange={(toCurrency) => updateTransfer({ toCurrency })}
+        onChange={(toCurrency) => {
+          updateTransfer({ toCurrency });
+          setOpenSheet(null);
+        }}
         searchable
       />
     </div>

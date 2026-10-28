@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useLayoutEffect, useRef } from "react";
 import Badge from "./Badge";
 import { isCurrencyCode } from "../constants/currencies";
 
@@ -27,6 +27,26 @@ function CurrencyAmountField({
   variant = "plain",
 }: CurrencyAmountFieldProps) {
   const id = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const caretDigitCount = useRef<number | null>(null);
+  const formattedValue = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+  useLayoutEffect(() => {
+    const digitCount = caretDigitCount.current;
+    const input = inputRef.current;
+    if (digitCount === null || !input) return;
+
+    let position = 0;
+    let digitsSeen = 0;
+    while (position < formattedValue.length && digitsSeen < digitCount) {
+      if (/\d/.test(formattedValue[position])) digitsSeen += 1;
+      position += 1;
+    }
+
+    input.setSelectionRange(position, position);
+    caretDigitCount.current = null;
+  }, [formattedValue]);
+
   return (
     <div
       className={`w-full ${variant === "card" ? "rounded-medium bg-surface-default p-padding-wide" : "px-padding-wide py-padding-medium"}`}
@@ -67,17 +87,22 @@ function CurrencyAmountField({
             {label}
           </label>
           <input
+            ref={inputRef}
             id={id}
             type="text"
             inputMode="numeric"
-            pattern="[0-9]*"
             autoComplete="off"
-            value={value}
+            value={formattedValue}
             placeholder="0"
             readOnly={readOnly || !onChange}
-            onChange={(event) =>
-              onChange?.(event.target.value.replace(/[^0-9]/g, ""))
-            }
+            onChange={(event) => {
+              const input = event.currentTarget;
+              const cursor = input.selectionStart ?? input.value.length;
+              caretDigitCount.current = input.value
+                .slice(0, cursor)
+                .replace(/\D/g, "").length;
+              onChange?.(input.value.replace(/\D/g, ""));
+            }}
             aria-invalid={Boolean(error)}
             aria-describedby={
               error ? `${id}-error` : helperText ? `${id}-helper` : undefined

@@ -8,3 +8,12 @@
 @import "./styles/semantic/colors/text.css";
 @import "./styles/semantic/appearance.css";
 @import "./styles/semantic/typography.css";
+
+@keyframes recipient-sheet-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
