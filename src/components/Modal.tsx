@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import CloseIcon from '../../../assets/icons/icon-close.svg?react';
+import CloseIcon from '../assets/icons/icon-close.svg?react';
 
 type ModalProps = {
   open: boolean;

@@ -1,9 +1,10 @@
-import ChipButton from '../../../components/common/ChipButton';
-import iconLocation from '../../../assets/icons/icon-location.svg';
-import MapIcon from '../../../assets/icons/icon-map.svg?react';
+import ChipButton from './common/ChipButton';
+import iconLocation from '../assets/icons/icon-location.svg';
+import MapIcon from '../assets/icons/icon-map.svg?react';
 
 type FilterBarProps = {
   filterCount: number;
+  presetName: string | null;
   hideClosed: boolean;
   onRegionClick: () => void;
   onFilterClick: () => void;
@@ -13,6 +14,7 @@ type FilterBarProps = {
 
 function FilterBar({
   filterCount,
+  presetName,
   hideClosed,
   onRegionClick,
   onFilterClick,
@@ -26,7 +28,7 @@ function FilterBar({
           내 지역
         </ChipButton>
         <ChipButton withIcon selected={filterCount > 0} onClick={onFilterClick}>
-          {filterCount > 0 ? `필터 ${filterCount}` : '필터'}
+          {presetName ?? (filterCount > 0 ? `필터 ${filterCount}` : '필터')}
         </ChipButton>
         <ChipButton selected={hideClosed} onClick={onHideClosedToggle}>
           마감 가리기

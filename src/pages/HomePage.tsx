@@ -22,7 +22,7 @@ function HomePage() {
           <p className="typo-body-small-md text-fg-neutral-muted">위 12px · 아래 16px</p>
         </div>
       </section>
-      <section className="sticky top-0 z-20 flex flex-col gap-5 bg-bg-neutral-default pb-5">    
+      <section className="sticky top-0 z-20 flex flex-col gap-5 bg-bg-neutral-default pb-5">
         <Calendar selectedKey={selectedDate} onSelect={setSelectedDate} />
       </section>
 
