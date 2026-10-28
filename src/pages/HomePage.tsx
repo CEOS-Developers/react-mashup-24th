@@ -69,7 +69,7 @@ function HomePage() {
         title="보내는 국가 / 통화"
         value={draft.fromCurrency}
         onChange={(fromCurrency) => setDraft({ ...draft, fromCurrency })}
-        disabledCurrencies={["VND"]}
+        disabledCurrencies={["VND", "SGD", "IDR"]}
       />
       <CurrencySelectSheet
         open={openSheet === "to"}
