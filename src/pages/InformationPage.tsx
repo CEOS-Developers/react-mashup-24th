@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { Navigate, useNavigate } from "react-router";
 import Button from "../components/Button";
 import Header from "../components/Header";
@@ -9,6 +9,13 @@ import { CURRENCIES, isCurrencyCode } from "../constants/currencies";
 import { RECIPIENT_COUNTRY_BANKS } from "../mocks/recipientOptions";
 import { PATHS } from "../routes/paths";
 import { useTransferStore } from "../stores/useTransferStore";
+import { createRemittance } from "../apis/remittance";
+import { ApiError } from "../types/api";
+import {
+  isBelowMinimum,
+  isValidAmount,
+  MIN_SEND_AMOUNT_MESSAGE,
+} from "../utils/transferAmount";
 
 interface RecipientForm {
   nationality: string;
@@ -40,6 +47,8 @@ function InformationPage() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionInFlight = useRef(false);
   const [validationMessage, setValidationMessage] = useState(
     "입력한 정보가 맞는지 다시 확인해주세요.",
   );
@@ -85,7 +94,8 @@ function InformationPage() {
       updateField(field, event.target.value.replace(/\D/g, ""));
     };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (submissionInFlight.current || isCompletionModalOpen) return;
     if (form.nationality === "베트남" && !form.middleName.trim()) {
       setValidationMessage("베트남 수취인은 중간이름을 입력해주세요.");
       setIsValidationModalOpen(true);
@@ -106,7 +116,40 @@ function InformationPage() {
       return;
     }
 
-    setIsCompletionModalOpen(true);
+    const sendAmount = Number(transfer.sendAmount);
+    if (
+      !isValidAmount(transfer.sendAmount) ||
+      !Number.isFinite(sendAmount) ||
+      isBelowMinimum(transfer.fromCurrency, transfer.sendAmount)
+    ) {
+      setValidationMessage(
+        isBelowMinimum(transfer.fromCurrency, transfer.sendAmount)
+          ? MIN_SEND_AMOUNT_MESSAGE
+          : "보내는 금액을 확인해주세요.",
+      );
+      setIsValidationModalOpen(true);
+      return;
+    }
+
+    submissionInFlight.current = true;
+    setIsSubmitting(true);
+    try {
+      await createRemittance({
+        receiveCurrency: transfer.toCurrency,
+        sendAmount,
+      });
+      setIsCompletionModalOpen(true);
+    } catch (error) {
+      setValidationMessage(
+        error instanceof ApiError
+          ? error.message
+          : "서버가 불안정하여 송금에 실패했습니다.",
+      );
+      setIsValidationModalOpen(true);
+    } finally {
+      submissionInFlight.current = false;
+      setIsSubmitting(false);
+    }
   };
 
   const handleCompletionConfirm = () => {
@@ -236,8 +279,14 @@ function InformationPage() {
       </main>
 
       <footer className="flex w-[402px] shrink-0 flex-col bg-white px-[20px] pt-padding-wide pb-[calc(var(--unit-24)+env(safe-area-inset-bottom))]">
-        <Button size="lg" className="w-full" onClick={handleNext}>
-          다음
+        <Button
+          size="lg"
+          className="w-full"
+          onClick={handleNext}
+          disabled={isSubmitting || isCompletionModalOpen}
+          aria-busy={isSubmitting}
+        >
+          {isSubmitting ? "저장 중…" : "다음"}
         </Button>
       </footer>
 
