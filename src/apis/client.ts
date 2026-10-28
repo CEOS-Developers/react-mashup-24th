@@ -37,3 +37,13 @@ export async function get<T>(url: string, config?: AxiosRequestConfig) {
   const { data } = await client.get<ApiResponse<T>>(url, config);
   return data.result;
 }
+
+// POST 요청도 공통 응답 처리 후 result 만 돌려줍니다.
+export async function post<T, D>(
+  url: string,
+  body: D,
+  config?: AxiosRequestConfig,
+) {
+  const { data } = await client.post<ApiResponse<T>>(url, body, config);
+  return data.result;
+}
