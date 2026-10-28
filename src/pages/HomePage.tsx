@@ -1,9 +1,19 @@
 import { useState } from 'react';
+import { EMPTY_FILTER } from '../constants/filter';
+import type { FilterState } from '../types/filter';
 import { formatDateKey } from '../utils/date';
+import { countFilter } from '../utils/filter';
 import Calendar from '../components/Calendar';
+import FilterBar from '../components/FilterBar';
+import FilterBottomSheet from '../components/FilterBottomSheet';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
+  const [appliedFilter, setAppliedFilter] = useState<FilterState>(EMPTY_FILTER);
+  const [appliedPresetName, setAppliedPresetName] = useState<string | null>(null);
+  const [hideClosed, setHideClosed] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   return (
     <div className="text-fg-neutral-default">
       <section className="flex h-13 items-center bg-bg-neutral-weak px-4">
@@ -22,8 +32,17 @@ function HomePage() {
           <p className="typo-body-small-md text-fg-neutral-muted">위 12px · 아래 16px</p>
         </div>
       </section>
+
       <section className="sticky top-0 z-20 flex flex-col gap-5 bg-bg-neutral-default pb-5">
         <Calendar selectedKey={selectedDate} onSelect={setSelectedDate} />
+        <FilterBar
+          filterCount={countFilter(appliedFilter)}
+          presetName={appliedPresetName}
+          hideClosed={hideClosed}
+          onRegionClick={() => {}}
+          onFilterClick={() => setIsFilterOpen(true)}
+          onHideClosedToggle={() => setHideClosed((prev) => !prev)}
+        />
       </section>
 
       <ul className="space-y-3 px-4" aria-label="매치 리스트 자리표시자">
@@ -37,6 +56,16 @@ function HomePage() {
           </li>
         ))}
       </ul>
+
+      <FilterBottomSheet
+        open={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        appliedFilter={appliedFilter}
+        onApply={(filter, presetName) => {
+          setAppliedFilter(filter);
+          setAppliedPresetName(presetName);
+        }}
+      />
     </div>
   );
 }
