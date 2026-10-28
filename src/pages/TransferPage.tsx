@@ -23,6 +23,8 @@ import {
 } from "../types/receiveOption";
 import { SORT_BY_TAB, sortReceiveOptions } from "../utils/sortReceiveOptions";
 import { useReceiveOptions } from "../hooks/useReceiveOptions";
+import { useReceiveOptionDetails } from "../hooks/useReceiveOptionDetails";
+import { toPlanSections } from "../utils/receiveOptionDetail";
 import {
   getEconomicalOptionKey,
   getOptionBadges,
@@ -74,6 +76,16 @@ function TransferPage() {
   // 받는 방법 목록을 내리면 금액 카드를 한 줄 요약으로 줄이고, 맨 위로 올리면 다시 펼칩니다.
   const [collapsed, setCollapsed] = useState(false);
   const [detailOption, setDetailOption] = useState<ReceiveOption | null>(null);
+  // 자세히 보기 모달이 열려 있을 때만 그 방법의 속도별 요금제를 불러옵니다.
+  const { data: detail } = useReceiveOptionDetails(
+    detailOption && transfer
+      ? {
+          receiveCurrency: transfer.toCurrency,
+          methodType: detailOption.methodType,
+          methodProvider: detailOption.methodProvider,
+        }
+      : null,
+  );
   // 선택한 받는 방법 카드의 key 입니다. 처음에는 아무것도 선택되지 않고, 카드를 누르면 선택됩니다.
   const [selectedMethodKey, setSelectedMethodKey] = useState<string | null>(
     null,
@@ -244,9 +256,13 @@ function TransferPage() {
             transfer.fromCurrency,
             transfer.toCurrency,
           )}
-          sections={
-            RECEIVE_METHOD_DETAIL_SECTIONS[getReceiveMethodKey(detailOption)]
-          }
+          // API 의 속도별 요금제 + (있으면) 방법별 추가 안내 목데이터
+          sections={[
+            ...toPlanSections(detail?.plans ?? [], transfer.fromCurrency),
+            ...(RECEIVE_METHOD_DETAIL_SECTIONS[
+              getReceiveMethodKey(detailOption)
+            ] ?? []),
+          ]}
           onClose={() => setDetailOption(null)}
         />
       )}
