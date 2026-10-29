@@ -1,12 +1,23 @@
 import { useState } from 'react';
+import { EMPTY_FILTER } from '../constants/filter';
+import type { FilterState } from '../types/filter';
 import { formatDateKey } from '../utils/date';
+import { countFilter } from '../utils/filter';
 import Calendar from '../components/Calendar';
 import MatchCard from '../components/match/MatchCard';
 import { mockMatches } from '../mocks/matches';
+import FilterBar from '../components/FilterBar';
+import FilterBottomSheet from '../components/FilterBottomSheet';
+import Banner from '../components/Banner';
+import CategoryChips from '../components/CategoryChips';
+import MainTabs from '../components/MainTabs';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
-
+  const [appliedFilter, setAppliedFilter] = useState<FilterState>(EMPTY_FILTER);
+  const [appliedPresetName, setAppliedPresetName] = useState<string | null>(null);
+  const [hideClosed, setHideClosed] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState(
     () => new Set(mockMatches.filter((match) => match.isFavorite).map((match) => match.id)),
   );
@@ -22,24 +33,20 @@ function HomePage() {
 
   return (
     <div className="text-fg-neutral-default">
-      <section className="flex h-13 items-center bg-bg-neutral-weak px-4">
-        <h1 className="typo-body-medium-sb">1번 영역 · 52px</h1>
-      </section>
+      <MainTabs selected="소셜 매치" />
+      <CategoryChips />
+      <Banner />
 
-      <section className="py-2.5" aria-label="2번 영역">
-        <div className="flex h-8 items-center bg-bg-accent-blue-weak px-4">
-          <h2 className="typo-body-medium-sb">2번 영역 · 32px · 위아래 10px</h2>
-        </div>
-      </section>
-
-      <section className="pt-3 pb-4" aria-label="3번 영역">
-        <div className="flex h-29 flex-col justify-center gap-1 bg-bg-accent-red-weak px-4">
-          <h2 className="typo-body-medium-sb">3번 영역 · 116px</h2>
-          <p className="typo-body-small-md text-fg-neutral-muted">위 12px · 아래 16px</p>
-        </div>
-      </section>
       <section className="sticky top-0 z-20 flex flex-col gap-5 bg-bg-neutral-default pb-5">
         <Calendar selectedKey={selectedDate} onSelect={setSelectedDate} />
+        <FilterBar
+          filterCount={countFilter(appliedFilter)}
+          presetName={appliedPresetName}
+          hideClosed={hideClosed}
+          onRegionClick={() => {}}
+          onFilterClick={() => setIsFilterOpen(true)}
+          onHideClosedToggle={() => setHideClosed((prev) => !prev)}
+        />
       </section>
 
       <ul aria-label="소셜 매치 목록">
@@ -56,6 +63,16 @@ function HomePage() {
           </li>
         ))}
       </ul>
+
+      <FilterBottomSheet
+        open={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        appliedFilter={appliedFilter}
+        onApply={(filter, presetName) => {
+          setAppliedFilter(filter);
+          setAppliedPresetName(presetName);
+        }}
+      />
     </div>
   );
 }
