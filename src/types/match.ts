@@ -76,3 +76,9 @@ export interface MatchListResponse {
   totalElements: number;
   totalPages: number;
 }
+
+export interface MatchFavoriteResponse {
+  matchId: number;
+  isFavorite: boolean;
+  favoriteCount: number;
+}
