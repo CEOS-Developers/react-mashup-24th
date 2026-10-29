@@ -112,7 +112,7 @@ function FilterBottomSheet({
         ))}
 
         <div className="sticky bottom-0 flex gap-2 bg-bg-layer-floating pt-4">
-                  <ActionButton
+          <ActionButton
             variant="secondary"
             disabled={countFilter(draft) === 0 || hasSamePreset}
             onClick={() => setIsSaveOpen(true)}
