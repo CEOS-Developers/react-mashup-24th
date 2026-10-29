@@ -3,6 +3,7 @@ import iconLocation from '../assets/icons/icon-location.svg';
 import MapIcon from '../assets/icons/icon-map.svg?react';
 
 type FilterBarProps = {
+  hasAppliedRegion: boolean;
   filterCount: number;
   presetName: string | null;
   hideClosed: boolean;
@@ -13,6 +14,7 @@ type FilterBarProps = {
 };
 
 function FilterBar({
+  hasAppliedRegion,
   filterCount,
   presetName,
   hideClosed,
@@ -24,7 +26,12 @@ function FilterBar({
   return (
     <div className="flex items-center justify-between px-4">
       <div className="flex items-center gap-2">
-        <ChipButton icon={iconLocation} selected onClick={onRegionClick} aria-haspopup="dialog">
+        <ChipButton
+          icon={iconLocation}
+          selected={hasAppliedRegion}
+          onClick={onRegionClick}
+          aria-haspopup="dialog"
+        >
           내 지역
         </ChipButton>
         <ChipButton

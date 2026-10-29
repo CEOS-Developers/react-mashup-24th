@@ -27,7 +27,7 @@ function HomePage() {
   const [hideClosed, setHideClosed] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isRegionOpen, setIsRegionOpen] = useState(false);
-  const [, setAppliedRegion] = useState<RegionSelection>({
+  const [appliedRegion, setAppliedRegion] = useState<RegionSelection>({
     cityId: null,
     areaIds: [],
   });
@@ -45,6 +45,7 @@ function HomePage() {
     refetch,
   } = useMatches({
     ...appliedFilter,
+    areaId: appliedRegion.areaIds,
     date: selectedDate,
     hideClosed,
     timeAfter: appliedFilter.timeAfter ?? undefined,
@@ -72,6 +73,7 @@ function HomePage() {
       <section className="sticky top-0 z-20 flex flex-col gap-5 bg-bg-neutral-default pb-5">
         <Calendar selectedKey={selectedDate} onSelect={setSelectedDate} />
         <FilterBar
+          hasAppliedRegion={appliedRegion.areaIds.length > 0}
           filterCount={countFilter(appliedFilter)}
           presetName={appliedPresetName}
           hideClosed={hideClosed}
