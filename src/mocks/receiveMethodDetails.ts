@@ -14,7 +14,10 @@ const VND_RECEIVE_NOTICES = [
 
 // 국가별 한도·은행 안내는 해당 통화에만 적용합니다.
 // 다른 국가의 실제 정책은 API 연동 또는 목데이터 추가 시 등록합니다.
-export function getMockReceiveNotices(fromCurrency: string, toCurrency: string) {
+export function getMockReceiveNotices(
+  fromCurrency: string,
+  toCurrency: string,
+) {
   if (toCurrency === "VND") {
     return VND_RECEIVE_NOTICES.filter(
       (_, index) => index !== 0 || fromCurrency === "KRW",
@@ -24,7 +27,7 @@ export function getMockReceiveNotices(fromCurrency: string, toCurrency: string) 
   return [`받는 금액은 ${toCurrency}로 입금돼요`];
 }
 
-// getReceiveOptionKey(option)의 값(예: BANK-NONE)을 키로 사용합니다.
+// getReceiveMethodKey(option)의 값(예: BANK-NONE)을 키로 사용합니다. (속도와 무관하게 방법별로 같은 안내)
 // 추가 안내가 필요하면 해당 키에 { title, items } 배열을 넣습니다.
 // 등록하지 않은 방법에는 공통 유의사항만 표시됩니다.
 export const RECEIVE_METHOD_DETAIL_SECTIONS: Record<
