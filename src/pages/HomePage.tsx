@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { formatDateKey } from '../utils/date';
+import Calendar from '../components/Calendar';
 import MatchCard from '../components/match/MatchCard';
 import { mockMatches } from '../mocks/matches';
 
 function HomePage() {
+  const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
+
   const [favoriteIds, setFavoriteIds] = useState(
     () => new Set(mockMatches.filter((match) => match.isFavorite).map((match) => match.id)),
   );
@@ -34,12 +38,8 @@ function HomePage() {
           <p className="typo-body-small-md text-fg-neutral-muted">위 12px · 아래 16px</p>
         </div>
       </section>
-
-      <section className="sticky top-0 z-20 mb-3 flex h-31 flex-col justify-center gap-1 border-b border-border-default bg-bg-brand-subtle px-4">
-        <h2 className="typo-body-medium-sb">4번 영역 · 124px · 상단 고정</h2>
-        <p className="typo-body-small-md text-fg-neutral-muted">
-          화면 상단에 닿으면 고정됩니다. 아래 매치 리스트와의 간격은 12px입니다.
-        </p>
+      <section className="sticky top-0 z-20 flex flex-col gap-5 bg-bg-neutral-default pb-5">
+        <Calendar selectedKey={selectedDate} onSelect={setSelectedDate} />
       </section>
 
       <ul aria-label="소셜 매치 목록">
