@@ -1,23 +1,41 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { formatDateKey } from '../utils/date';
 import Calendar from '../components/Calendar';
 import MatchCard from '../components/match/MatchCard';
-import { mockMatches } from '../mocks/matches';
+import { useMatches } from '../hooks/useMatches';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import type { MatchListItemResponse } from '../types/match';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
 
-  const [favoriteIds, setFavoriteIds] = useState(
-    () => new Set(mockMatches.filter((match) => match.isFavorite).map((match) => match.id)),
-  );
+  // 즐겨찾기 변경 API 연결 전까지 서버 값에 사용자의 선택만 임시로 덮어씁니다.
+  const [favoriteOverrides, setFavoriteOverrides] = useState<Record<number, boolean>>({});
 
-  const toggleFavorite = (id: string) => {
-    setFavoriteIds((previous) => {
-      const next = new Set(previous);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const {
+    data,
+    isPending,
+    isError,
+    isFetching,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+  } = useMatches({ date: selectedDate });
+
+  const matches = data?.pages.flatMap((page) => page.content) ?? [];
+  const loadMore = useCallback(() => fetchNextPage({ cancelRefetch: false }), [fetchNextPage]);
+  const loadMoreRef = useInfiniteScroll({
+    enabled: hasNextPage && !isFetching && !isError,
+    onLoadMore: loadMore,
+  });
+
+  const toggleFavorite = (match: MatchListItemResponse) => {
+    setFavoriteOverrides((previous) => ({
+      ...previous,
+      [match.matchId]: !(previous[match.matchId] ?? match.isFavorite),
+    }));
   };
 
   return (
@@ -42,20 +60,62 @@ function HomePage() {
         <Calendar selectedKey={selectedDate} onSelect={setSelectedDate} />
       </section>
 
-      <ul aria-label="소셜 매치 목록">
-        {mockMatches.map((match) => (
-          <li key={match.id}>
-            <MatchCard
-              match={match}
-              selected={favoriteIds.has(match.id)}
-              favoriteCount={
-                match.favoriteCount + Number(favoriteIds.has(match.id)) - Number(match.isFavorite)
-              }
-              onFavoriteClick={() => toggleFavorite(match.id)}
-            />
-          </li>
-        ))}
+      <ul aria-label="소셜 매치 목록" aria-busy={isFetching}>
+        {matches.map((match) => {
+          const selected = favoriteOverrides[match.matchId] ?? match.isFavorite;
+
+          return (
+            <li key={match.matchId}>
+              <MatchCard
+                match={match}
+                selected={selected}
+                favoriteCount={match.favoriteCount + Number(selected) - Number(match.isFavorite)}
+                onFavoriteClick={() => toggleFavorite(match)}
+              />
+            </li>
+          );
+        })}
       </ul>
+
+      <div
+        ref={loadMoreRef}
+        className="flex min-h-16 flex-col items-center justify-center gap-3 px-4 py-5 text-center text-fg-neutral-muted typo-body-medium-md"
+      >
+        {isPending ? (
+          <p role="status">매치를 불러오고 있어요.</p>
+        ) : isError ? (
+          <>
+            <p role="alert">
+              {isFetchNextPageError
+                ? '다음 매치를 불러오지 못했어요.'
+                : '매치 목록을 불러오지 못했어요.'}
+            </p>
+            <button
+              type="button"
+              disabled={isFetching}
+              onClick={() => (isFetchNextPageError ? loadMore() : refetch())}
+              className="h-10 cursor-pointer rounded-full bg-bg-brand-subtle px-4 text-fg-neutral-default typo-button-medium-md disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              다시 시도
+            </button>
+          </>
+        ) : matches.length === 0 ? (
+          <p role="status">선택한 날짜에 매치가 없어요.</p>
+        ) : isFetchingNextPage ? (
+          <p role="status">다음 매치를 불러오고 있어요.</p>
+        ) : hasNextPage ? (
+          <button
+            type="button"
+            disabled={isFetching}
+            onClick={loadMore}
+            className="h-10 cursor-pointer rounded-full bg-bg-neutral-weak px-4 typo-button-medium-md disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            매치 더 보기
+          </button>
+        ) : (
+          <p role="status">모든 매치를 확인했어요.</p>
+        )}
+      </div>
     </div>
   );
 }
