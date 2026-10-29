@@ -61,9 +61,9 @@ export const FILTER_SECTIONS: FilterSectionConfig[] = [
     key: 'level',
     title: '레벨',
     options: [
-      { value: 'STARTER', label: '스타터' },
-      { value: 'BASIC', label: '비기너' },
-      { value: 'INTERMEDIATE', label: '아마추어' },
+      { value: 'STARTER', label: '입문' },
+      { value: 'BASIC', label: '초급' },
+      { value: 'INTERMEDIATE', label: '중급' },
     ],
   },
   {
