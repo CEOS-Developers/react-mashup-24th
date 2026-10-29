@@ -46,6 +46,8 @@ function FilterBottomSheet({
     if (open) setDraft(appliedFilter);
   }, [open, appliedFilter]);
 
+  const hasSamePreset = presets.some((preset) => isSameFilter(preset.filter, draft));
+
   const handleApply = () => {
     onApply(draft);
     onClose();
@@ -110,9 +112,9 @@ function FilterBottomSheet({
         ))}
 
         <div className="sticky bottom-0 flex gap-2 bg-bg-layer-floating pt-4">
-          <ActionButton
+                  <ActionButton
             variant="secondary"
-            disabled={countFilter(draft) === 0}
+            disabled={countFilter(draft) === 0 || hasSamePreset}
             onClick={() => setIsSaveOpen(true)}
           >
             프리셋에 저장
