@@ -6,7 +6,6 @@ import ChipButton from './common/ChipButton';
 import Modal from './Modal';
 import TrashIcon from '../assets/icons/icon-trash.svg?react';
 import { EMPTY_FILTER, GENDER_OPTIONS, STATUS_OPTIONS, TIME_OPTIONS } from '../constants/filter';
-import { usePresets } from '../hooks/usePresets';
 import type { FilterPreset, FilterState } from '../types/filter';
 import { countFilter, isSameFilter, summarizeFilter, toggleValue } from '../utils/filter';
 import PresetNameModal from './PresetNameModal';
@@ -15,7 +14,10 @@ type FilterBottomSheetProps = {
   open: boolean;
   onClose: () => void;
   appliedFilter: FilterState;
-  onApply: (filter: FilterState, presetName: string | null) => void;
+  presets: FilterPreset[];
+  onAddPreset: (name: string, filter: FilterState) => void;
+  onRemovePreset: (id: string) => void;
+  onApply: (filter: FilterState) => void;
 };
 
 function FilterSection({ title, children }: { title: string; children: ReactNode }) {
@@ -27,9 +29,16 @@ function FilterSection({ title, children }: { title: string; children: ReactNode
   );
 }
 
-function FilterBottomSheet({ open, onClose, appliedFilter, onApply }: FilterBottomSheetProps) {
+function FilterBottomSheet({
+  open,
+  onClose,
+  appliedFilter,
+  presets,
+  onAddPreset,
+  onRemovePreset,
+  onApply,
+}: FilterBottomSheetProps) {
   const [draft, setDraft] = useState<FilterState>(appliedFilter);
-  const { presets, addPreset, removePreset } = usePresets();
   const [isSaveOpen, setIsSaveOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<FilterPreset | null>(null);
 
@@ -38,8 +47,7 @@ function FilterBottomSheet({ open, onClose, appliedFilter, onApply }: FilterBott
   }, [open, appliedFilter]);
 
   const handleApply = () => {
-    const matchedPreset = presets.find((preset) => isSameFilter(preset.filter, draft));
-    onApply(draft, matchedPreset ? matchedPreset.name : null);
+    onApply(draft);
     onClose();
   };
 
@@ -147,7 +155,7 @@ function FilterBottomSheet({ open, onClose, appliedFilter, onApply }: FilterBott
         onClose={() => setIsSaveOpen(false)}
         existingNames={presets.map((preset) => preset.name)}
         onSubmit={(name) => {
-          addPreset(name, draft);
+          onAddPreset(name, draft);
           setIsSaveOpen(false);
         }}
       />
@@ -160,7 +168,7 @@ function FilterBottomSheet({ open, onClose, appliedFilter, onApply }: FilterBott
           </ActionButton>
           <ActionButton
             onClick={() => {
-              if (deleteTarget) removePreset(deleteTarget.id);
+              if (deleteTarget) onRemovePreset(deleteTarget.id);
               setDeleteTarget(null);
             }}
           >
