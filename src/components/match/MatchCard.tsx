@@ -1,4 +1,9 @@
-import { LEVEL_LABELS, MATCH_STATUS_LABELS, MATCH_TYPE_LABELS } from '../../constants/match';
+import {
+  GENDER_LABELS,
+  LEVEL_LABELS,
+  MATCH_STATUS_LABELS,
+  MATCH_TYPE_LABELS,
+} from '../../constants/match';
 import { useMatchFavorite } from '../../hooks/useMatchFavorite';
 import type { MatchListItemResponse } from '../../types/match';
 import { formatMatchTime } from '../../utils/date';
@@ -10,6 +15,12 @@ export type MatchCardProps = {
 
 function MatchCard({ match }: MatchCardProps) {
   const { setFavorite, isPending } = useMatchFavorite(match.matchId);
+  const isClosingSoon = match.status === 'CLOSING_SOON';
+  const statusColorClassName = isClosingSoon
+    ? 'bg-bg-accent-red-weak text-fg-accent-info-red'
+    : match.canApply
+      ? 'bg-bg-accent-blue-weak text-fg-accent-info-blue'
+      : 'bg-bg-neutral-weak text-fg-neutral-muted';
 
   return (
     <article className="flex items-center gap-4 bg-bg-neutral-transparent px-4 py-2">
@@ -27,15 +38,24 @@ function MatchCard({ match }: MatchCardProps) {
           <div className="flex items-center gap-1">
             <time
               dateTime={match.startTime}
-              className="text-fg-accent-info-blue typo-body-large-sb"
+              className={`${isClosingSoon ? 'text-fg-accent-info-red' : 'text-fg-accent-info-blue'} typo-body-large-sb`}
             >
               {formatMatchTime(match.startTime)}
             </time>
-            <span
-              className={`inline-flex h-[17px] shrink-0 items-center justify-center rounded-full px-2 typo-label-small-sb ${match.canApply ? 'bg-bg-accent-blue-weak text-fg-accent-info-blue' : 'bg-bg-neutral-weak text-fg-neutral-muted'}`}
-            >
-              {MATCH_STATUS_LABELS[match.status]}
-            </span>
+            {match.status !== 'OPEN' && (
+              <span
+                className={`inline-flex h-[17px] shrink-0 items-center justify-center rounded-full px-2 typo-label-small-sb ${statusColorClassName}`}
+              >
+                {isClosingSoon && match.remainingSlots > 0
+                  ? `${match.remainingSlots}자리남음`
+                  : MATCH_STATUS_LABELS[match.status]}
+              </span>
+            )}
+            {match.hasAiReport && (
+              <span className="inline-flex h-[17px] shrink-0 items-center justify-center rounded-full bg-bg-accent-blue-weak px-2 text-fg-accent-info-blue typo-label-small-sb">
+                AI 리포트
+              </span>
+            )}
           </div>
           <h3
             className="truncate text-fg-neutral-default typo-body-large-sb"
@@ -47,12 +67,19 @@ function MatchCard({ match }: MatchCardProps) {
             <span className="text-fg-neutral-muted typo-body-medium-sb">
               {MATCH_TYPE_LABELS[match.matchType]}
             </span>
+            {match.genderType !== 'MIXED' && (
+              <span className="text-fg-neutral-subtle typo-body-medium-md">
+                {GENDER_LABELS[match.genderType]}
+              </span>
+            )}
             <span className="text-fg-neutral-subtle typo-body-medium-md">
               {LEVEL_LABELS[match.levelType]}
             </span>
-            <span className="text-fg-neutral-subtle typo-body-medium-md">
-              {match.hasParking ? '주차' : '주차 불가'}
-            </span>
+            {match.hasParking && (
+              <span className="text-fg-neutral-subtle typo-body-medium-md">
+                주차 {match.parkingCapacity}자리 남음
+              </span>
+            )}
           </div>
         </div>
       </div>

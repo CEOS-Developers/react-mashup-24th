@@ -83,18 +83,7 @@ function HomePage() {
           <p role="status">선택한 날짜에 매치가 없어요.</p>
         ) : isFetchingNextPage ? (
           <p role="status">다음 매치를 불러오고 있어요.</p>
-        ) : hasNextPage ? (
-          <button
-            type="button"
-            disabled={isFetching}
-            onClick={loadMore}
-            className="h-10 cursor-pointer rounded-full bg-bg-neutral-weak px-4 typo-button-medium-md disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            매치 더 보기
-          </button>
-        ) : (
-          <p role="status">모든 매치를 확인했어요.</p>
-        )}
+        ) : null}
       </div>
     </div>
   );
