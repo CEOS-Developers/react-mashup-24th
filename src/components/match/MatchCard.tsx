@@ -1,8 +1,10 @@
-import type { Match } from '../../types/match';
+import { LEVEL_LABELS, MATCH_STATUS_LABELS, MATCH_TYPE_LABELS } from '../../constants/match';
+import type { MatchListItemResponse } from '../../types/match';
+import { formatMatchTime } from '../../utils/date';
 import FavoriteButton from '../common/FavoriteButton';
 
 export type MatchCardProps = {
-  match: Match;
+  match: MatchListItemResponse;
   selected: boolean;
   favoriteCount: number;
   onFavoriteClick: () => void;
@@ -13,8 +15,8 @@ function MatchCard({ match, selected, favoriteCount, onFavoriteClick }: MatchCar
     <article className="flex items-center gap-4 bg-bg-neutral-transparent px-4 py-2">
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <img
-          src={match.imageSrc}
-          alt="축구장 전경"
+          src={match.stadiumImageUrl}
+          alt={`${match.stadiumName} 전경`}
           width={74}
           height={74}
           loading="lazy"
@@ -23,11 +25,16 @@ function MatchCard({ match, selected, favoriteCount, onFavoriteClick }: MatchCar
         />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex items-center gap-1">
-            <time dateTime={match.startsAt} className="text-fg-accent-info-blue typo-body-large-sb">
-              {match.startsAt}
+            <time
+              dateTime={match.startTime}
+              className="text-fg-accent-info-blue typo-body-large-sb"
+            >
+              {formatMatchTime(match.startTime)}
             </time>
-            <span className="inline-flex h-[17px] shrink-0 items-center justify-center rounded-full bg-bg-accent-blue-weak px-2 text-fg-accent-info-blue typo-label-small-sb">
-              {match.badge}
+            <span
+              className={`inline-flex h-[17px] shrink-0 items-center justify-center rounded-full px-2 typo-label-small-sb ${match.canApply ? 'bg-bg-accent-blue-weak text-fg-accent-info-blue' : 'bg-bg-neutral-weak text-fg-neutral-muted'}`}
+            >
+              {MATCH_STATUS_LABELS[match.status]}
             </span>
           </div>
           <h3
@@ -37,9 +44,15 @@ function MatchCard({ match, selected, favoriteCount, onFavoriteClick }: MatchCar
             {match.stadiumName}
           </h3>
           <div className="flex flex-wrap items-start gap-x-2 gap-y-1 whitespace-nowrap">
-            <span className="text-fg-neutral-muted typo-body-medium-sb">{match.format}</span>
-            <span className="text-fg-neutral-subtle typo-body-medium-md">{match.level}</span>
-            <span className="text-fg-neutral-subtle typo-body-medium-md">{match.parking}</span>
+            <span className="text-fg-neutral-muted typo-body-medium-sb">
+              {MATCH_TYPE_LABELS[match.matchType]}
+            </span>
+            <span className="text-fg-neutral-subtle typo-body-medium-md">
+              {LEVEL_LABELS[match.levelType]}
+            </span>
+            <span className="text-fg-neutral-subtle typo-body-medium-md">
+              {match.hasParking ? '주차' : '주차 불가'}
+            </span>
           </div>
         </div>
       </div>
