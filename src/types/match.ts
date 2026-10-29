@@ -59,7 +59,7 @@ export interface MatchListItemResponse {
   hasAwning: boolean;
   hasParking: boolean;
   hasShoeRental: boolean;
-  parkingCapacity: number;
+  parkingCapacity: number | null;
   reservedParkingCount: number;
   isEarlybird: boolean;
   hasAiReport: boolean;

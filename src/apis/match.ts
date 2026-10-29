@@ -1,5 +1,6 @@
 import type { MatchFavoriteResponse, MatchListParams, MatchListResponse } from '../types/match';
 import type { BaseResponse } from '../types/response';
+import { normalizeMatchFilters } from '../utils/match';
 import axiosInstance from './axios';
 
 export async function getMatches(
@@ -14,6 +15,23 @@ export async function getMatches(
 
   if (!data.isSuccess || !data.result) {
     throw new Error(data.message || '매치 목록을 불러오지 못했어요.');
+  }
+
+  return data.result;
+}
+
+export async function searchMatches(
+  { date, page = 0, size = 20, hideClosed = true, ...filters }: MatchListParams,
+  signal?: AbortSignal,
+): Promise<MatchListResponse> {
+  const { data } = await axiosInstance.post<BaseResponse<MatchListResponse>>(
+    '/api/matches/search',
+    { date, ...normalizeMatchFilters(filters), hideClosed, page, size },
+    { signal },
+  );
+
+  if (!data.isSuccess || !data.result) {
+    throw new Error(data.message || '필터에 맞는 매치를 불러오지 못했어요.');
   }
 
   return data.result;

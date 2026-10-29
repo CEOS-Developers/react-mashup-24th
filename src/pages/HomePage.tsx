@@ -1,15 +1,21 @@
 import { useCallback, useState } from 'react';
+import { isAxiosError } from 'axios';
 import { formatDateKey } from '../utils/date';
 import Calendar from '../components/Calendar';
 import MatchCard from '../components/match/MatchCard';
 import { useMatches } from '../hooks/useMatches';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import type { MatchFilters } from '../types/match';
+import type { BaseResponse } from '../types/response';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
+  // 바텀시트 연결 시 setAppliedFilters를 함께 꺼내 확정·초기화 버튼에 연결. 꼭 이걸 사용하지 않아도 됨. 입맛에 맞게 사용하자..
+  const [appliedFilters] = useState<MatchFilters>({});
 
   const {
     data,
+    error,
     isPending,
     isError,
     isFetching,
@@ -18,8 +24,10 @@ function HomePage() {
     hasNextPage,
     fetchNextPage,
     refetch,
-  } = useMatches({ date: selectedDate });
+  } = useMatches({ ...appliedFilters, date: selectedDate });
 
+  const isFilterRequiredError =
+    isAxiosError<BaseResponse<unknown>>(error) && error.response?.data?.code === 'MATCH4001';
   const matches = data?.pages.flatMap((page) => page.content) ?? [];
   const loadMore = useCallback(() => fetchNextPage({ cancelRefetch: false }), [fetchNextPage]);
   const loadMoreRef = useInfiniteScroll({
@@ -66,9 +74,11 @@ function HomePage() {
         ) : isError ? (
           <>
             <p role="alert">
-              {isFetchNextPageError
-                ? '다음 매치를 불러오지 못했어요.'
-                : '매치 목록을 불러오지 못했어요.'}
+              {isFilterRequiredError
+                ? '필터를 하나 이상 선택해 주세요.'
+                : isFetchNextPageError
+                  ? '다음 매치를 불러오지 못했어요.'
+                  : '매치 목록을 불러오지 못했어요.'}
             </p>
             <button
               type="button"
