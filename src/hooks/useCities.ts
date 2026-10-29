@@ -37,15 +37,17 @@ export function cityAreasQueryOptions(cityId: number | null) {
 }
 
 export function useCities(enabled = true) {
-  return useQuery({ ...citiesQueryOptions(), enabled });
+  const query = useQuery({ ...citiesQueryOptions(), enabled });
+  return { ...query, data: query.data ?? [] };
 }
 
 export function useCityAreas(cityId: number | null, enabled = true) {
-  return useQuery({ ...cityAreasQueryOptions(cityId), enabled: enabled && cityId !== null });
+  const query = useQuery({ ...cityAreasQueryOptions(cityId), enabled: enabled && cityId !== null });
+  return { ...query, data: query.data ?? [] };
 }
 
 export function useFavoriteAreas(enabled = true) {
-  return useQuery({
+  const query = useQuery({
     queryKey: areaKeys.favorites,
     queryFn: ({ signal }) => getFavoriteAreas(signal),
     enabled,
@@ -53,4 +55,5 @@ export function useFavoriteAreas(enabled = true) {
     gcTime: 5 * 60 * 1000,
     retry: retryRegionRequest,
   });
+  return { ...query, data: query.data ?? [] };
 }
