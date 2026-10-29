@@ -1,16 +1,16 @@
 import { LEVEL_LABELS, MATCH_STATUS_LABELS, MATCH_TYPE_LABELS } from '../../constants/match';
+import { useMatchFavorite } from '../../hooks/useMatchFavorite';
 import type { MatchListItemResponse } from '../../types/match';
 import { formatMatchTime } from '../../utils/date';
 import FavoriteButton from '../common/FavoriteButton';
 
 export type MatchCardProps = {
   match: MatchListItemResponse;
-  selected: boolean;
-  favoriteCount: number;
-  onFavoriteClick: () => void;
 };
 
-function MatchCard({ match, selected, favoriteCount, onFavoriteClick }: MatchCardProps) {
+function MatchCard({ match }: MatchCardProps) {
+  const { setFavorite, isPending } = useMatchFavorite(match.matchId);
+
   return (
     <article className="flex items-center gap-4 bg-bg-neutral-transparent px-4 py-2">
       <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -58,14 +58,16 @@ function MatchCard({ match, selected, favoriteCount, onFavoriteClick }: MatchCar
       </div>
       <div className="flex w-9 shrink-0 flex-col items-center justify-center">
         <FavoriteButton
-          selected={selected}
-          onClick={onFavoriteClick}
+          selected={match.isFavorite}
+          onClick={() => setFavorite(!match.isFavorite)}
+          disabled={isPending}
+          aria-busy={isPending}
           aria-label={`${match.stadiumName} 즐겨찾기`}
           className="h-9"
         />
         <span className="w-full text-center text-fg-neutral-subtle typo-body-small-md">
           <span className="sr-only">즐겨찾기 </span>
-          {favoriteCount}
+          {match.favoriteCount}
         </span>
       </div>
     </article>

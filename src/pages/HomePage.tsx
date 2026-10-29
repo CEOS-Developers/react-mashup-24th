@@ -4,13 +4,9 @@ import Calendar from '../components/Calendar';
 import MatchCard from '../components/match/MatchCard';
 import { useMatches } from '../hooks/useMatches';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import type { MatchListItemResponse } from '../types/match';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
-
-  // 즐겨찾기 변경 API 연결 전까지 서버 값에 사용자의 선택만 임시로 덮어씁니다.
-  const [favoriteOverrides, setFavoriteOverrides] = useState<Record<number, boolean>>({});
 
   const {
     data,
@@ -30,13 +26,6 @@ function HomePage() {
     enabled: hasNextPage && !isFetching && !isError,
     onLoadMore: loadMore,
   });
-
-  const toggleFavorite = (match: MatchListItemResponse) => {
-    setFavoriteOverrides((previous) => ({
-      ...previous,
-      [match.matchId]: !(previous[match.matchId] ?? match.isFavorite),
-    }));
-  };
 
   return (
     <div className="text-fg-neutral-default">
@@ -61,20 +50,11 @@ function HomePage() {
       </section>
 
       <ul aria-label="소셜 매치 목록" aria-busy={isFetching}>
-        {matches.map((match) => {
-          const selected = favoriteOverrides[match.matchId] ?? match.isFavorite;
-
-          return (
-            <li key={match.matchId}>
-              <MatchCard
-                match={match}
-                selected={selected}
-                favoriteCount={match.favoriteCount + Number(selected) - Number(match.isFavorite)}
-                onFavoriteClick={() => toggleFavorite(match)}
-              />
-            </li>
-          );
-        })}
+        {matches.map((match) => (
+          <li key={match.matchId}>
+            <MatchCard match={match} />
+          </li>
+        ))}
       </ul>
 
       <div

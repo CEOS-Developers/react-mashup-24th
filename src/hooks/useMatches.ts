@@ -4,9 +4,9 @@ import { getMatches } from '../apis/match';
 import type { MatchListQuery } from '../types/match';
 
 export const matchKeys = {
-  all: ['matches'] as const,
+  lists: ['matches', 'list'] as const,
   // 추후 POST 필터 조회는 별도 키를 사용해 GET 목록의 캐시와 구분합니다.
-  list: (params: MatchListQuery) => [...matchKeys.all, 'list', 'GET', params] as const,
+  list: (params: MatchListQuery) => [...matchKeys.lists, 'GET', params] as const,
 };
 
 export function matchListQueryOptions({ size = 20, hideClosed = true, ...query }: MatchListQuery) {
