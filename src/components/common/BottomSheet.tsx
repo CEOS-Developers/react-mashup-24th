@@ -77,7 +77,11 @@ function BottomSheet({ open, onClose, title, size = 'small', children }: BottomS
           onClick={onClose}
           className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-small focus-visible:outline-2 focus-visible:outline-border-focus"
         >
-          <img src={iconClose} alt="" className="size-6" />
+          <span
+            aria-hidden="true"
+            className="size-6 bg-current text-fg-neutral-subtle mask-contain mask-center mask-no-repeat"
+            style={{ maskImage: `url("${iconClose}")`, WebkitMaskImage: `url("${iconClose}")` }}
+          />
         </button>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4">{children}</div>

@@ -14,6 +14,8 @@ import FilterBottomSheet from '../components/FilterBottomSheet';
 import Banner from '../components/Banner';
 import CategoryChips from '../components/CategoryChips';
 import MainTabs from '../components/MainTabs';
+import RegionBottomSheet from '../components/RegionBottomSheet';
+import type { RegionSelection } from '../types/region';
 import { usePresets } from '../hooks/usePresets';
 
 function HomePage() {
@@ -24,6 +26,11 @@ function HomePage() {
     presets.find((preset) => isSameFilter(preset.filter, appliedFilter))?.name ?? null;
   const [hideClosed, setHideClosed] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isRegionOpen, setIsRegionOpen] = useState(false);
+  const [appliedRegion, setAppliedRegion] = useState<RegionSelection>({
+    cityId: null,
+    areaIds: [],
+  });
 
   const {
     data,
@@ -38,6 +45,7 @@ function HomePage() {
     refetch,
   } = useMatches({
     ...appliedFilter,
+    areaId: appliedRegion.areaIds,
     date: selectedDate,
     hideClosed,
     timeAfter: appliedFilter.timeAfter ?? undefined,
@@ -65,12 +73,14 @@ function HomePage() {
       <section className="sticky top-0 z-20 flex flex-col gap-5 bg-bg-neutral-default pb-5">
         <Calendar selectedKey={selectedDate} onSelect={setSelectedDate} />
         <FilterBar
+          hasAppliedRegion={appliedRegion.areaIds.length > 0}
           filterCount={countFilter(appliedFilter)}
           presetName={appliedPresetName}
           hideClosed={hideClosed}
-          onRegionClick={() => {}}
+          onRegionClick={() => setIsRegionOpen(true)}
           onFilterClick={() => setIsFilterOpen(true)}
           onHideClosedToggle={() => setHideClosed((prev) => !prev)}
+          onMapClick={() => setIsRegionOpen(true)}
         />
       </section>
 
@@ -81,6 +91,12 @@ function HomePage() {
           </li>
         ))}
       </ul>
+
+      <RegionBottomSheet
+        open={isRegionOpen}
+        onClose={() => setIsRegionOpen(false)}
+        onApply={setAppliedRegion}
+      />
 
       <div
         ref={loadMoreRef}
