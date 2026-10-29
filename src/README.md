@@ -22,6 +22,7 @@ src/
 
 - 컴포넌트와 페이지는 `PascalCase.tsx`로 작성합니다. 예: `ActionButton.tsx`, `HomePage.tsx`.
 - 커스텀 훅은 `use` 접두사를 사용합니다. 예: `hooks/useCities.ts`.
+- `useMutation`을 사용하는 커스텀 훅은 `useMutationFavoriteArea`, `useMutationFavoriteMatch`처럼 `useMutation` 접두사를 사용하고 파일명도 훅 이름과 일치시킵니다.
 - API 함수와 공유 타입은 `apis/region.ts`, `types/region.ts`처럼 도메인별로 묶습니다.
 - 특정 컴포넌트에서만 사용하는 타입은 해당 컴포넌트 파일에 둡니다. 여러 파일에서 공유할 때 `types/`로 분리합니다.
 
@@ -56,7 +57,7 @@ src/
 - GET/POST 캐시는 `['matches', 'list', 'GET' | 'POST', params]`로 구분합니다. 필터 적용·초기화 시 캐시가 있어도 서버에서 다시 조회하며, 변경된 날짜·조건의 목록은 별도 캐시에서 조회합니다.
 - 빈 배열·미선택 값과 `indoor`·`awning`·`parking`의 false는 생략합니다. `shoeRental: false`, `earlybird: false`, `timeAfter: 0`은 유효한 조건으로 유지합니다. 실제 서버는 `hideClosed: false` 단독 조건도 `MATCH4001`로 거절하므로, `hideClosed`와 페이지 정보는 추가 필터로 세지 않습니다.
 - `HomePage`는 `appliedFilter: FilterState`와 `appliedRegion: RegionSelection`을 내부 상태로 관리합니다. 필터 바텀시트 안의 선택 중인 값은 임시 상태로 관리하고, 적용 버튼을 누를 때만 `setAppliedFilter`로 반영합니다. 필터 초기화는 일반 필터만 비우며, 적용한 지역이 남아 있으면 POST 검색을 유지합니다. 지역과 일반 필터가 모두 비어 있으면 GET 목록을 조회합니다. 미선택 시간·성별과 얼리버드·신발 대여 칩은 요청 조건에서 생략합니다. 캘린더로 날짜를 바꿔도 적용한 지역과 필터는 유지합니다.
-- 즐겨찾기는 `useMatchFavorite`의 `useMutation`으로 PUT/DELETE API를 호출합니다. 하트와 찜 수를 먼저 변경하고, 실패하면 해당 매치만 복원하며 토스트를 표시합니다. 성공하면 서버 응답으로 갱신합니다.
+- 즐겨찾기는 `useMutationFavoriteMatch`의 `useMutation`으로 PUT/DELETE API를 호출합니다. 하트와 찜 수를 먼저 변경하고, 실패하면 해당 매치만 복원하며 토스트를 표시합니다. 성공하면 서버 응답으로 갱신합니다.
 
 ## 지역 선택
 

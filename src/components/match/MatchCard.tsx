@@ -4,7 +4,7 @@ import {
   MATCH_STATUS_LABELS,
   MATCH_TYPE_LABELS,
 } from '../../constants/match';
-import { useMatchFavorite } from '../../hooks/useMatchFavorite';
+import { useMutationFavoriteMatch } from '../../hooks/useMutationFavoriteMatch';
 import type { MatchListItemResponse } from '../../types/match';
 import { formatMatchTime } from '../../utils/date';
 import FavoriteButton from '../common/FavoriteButton';
@@ -14,7 +14,7 @@ export type MatchCardProps = {
 };
 
 function MatchCard({ match }: MatchCardProps) {
-  const { setFavorite, isPending } = useMatchFavorite(match.matchId);
+  const { setFavorite, isPending } = useMutationFavoriteMatch(match.matchId);
   const isClosingSoon = match.status === 'CLOSING_SOON';
   const statusColorClassName = isClosingSoon
     ? 'bg-bg-accent-red-weak text-fg-accent-info-red'

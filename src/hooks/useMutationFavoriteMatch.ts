@@ -102,7 +102,7 @@ export function matchFavoriteMutationOptions(queryClient: QueryClient, matchId: 
   });
 }
 
-export function useMatchFavorite(matchId: number) {
+export function useMutationFavoriteMatch(matchId: number) {
   const queryClient = useQueryClient();
   const options = matchFavoriteMutationOptions(queryClient, matchId);
   const mutation = useMutation(options);
