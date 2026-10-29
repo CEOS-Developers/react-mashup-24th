@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'react-hot-toast';
 import './index.css';
 import App from './App.tsx';
 import AuthGate from './components/AuthGate';
@@ -20,6 +21,7 @@ enableMocking().then(() => {
         <AuthGate>
           <App />
         </AuthGate>
+        <Toaster position="bottom-center" containerStyle={{ bottom: 96 }} />
       </QueryClientProvider>
     </StrictMode>,
   );
