@@ -1,30 +1,55 @@
-import { GENDER_OPTIONS, STATUS_OPTIONS, TIME_OPTIONS } from '../constants/filter';
-import type { FilterState } from '../types/filter';
+import { FILTER_SECTIONS } from '../constants/filter';
+import type { BooleanKey, FilterOption, FilterSectionConfig, FilterState } from '../types/filter';
 
-export function countFilter(filter: FilterState) {
-  return filter.status.length + (filter.time ? 1 : 0) + filter.gender.length;
-}
+type OptionValue = FilterOption['value'];
 
-export function toggleValue(list: string[], value: string) {
+export function toggleValue<T>(list: T[], value: T) {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
 }
 
+export function isChipOn(filter: FilterState, section: FilterSectionConfig, value: OptionValue) {
+  if (section.type === 'multi') return (filter[section.key] as OptionValue[]).includes(value);
+  if (section.type === 'single') return filter[section.key] === value;
+  return filter[value as BooleanKey];
+}
+
+export function toggleChip(
+  filter: FilterState,
+  section: FilterSectionConfig,
+  value: OptionValue,
+): FilterState {
+  if (section.type === 'multi') {
+    return { ...filter, [section.key]: toggleValue(filter[section.key] as OptionValue[], value) };
+  }
+  if (section.type === 'single') {
+    return { ...filter, [section.key]: filter[section.key] === value ? null : value };
+  }
+  const key = value as BooleanKey;
+  return { ...filter, [key]: !filter[key] };
+}
+
+export function countFilter(filter: FilterState) {
+  return FILTER_SECTIONS.reduce(
+    (count, section) =>
+      count + section.options.filter((option) => isChipOn(filter, section, option.value)).length,
+    0,
+  );
+}
+
 export function isSameFilter(a: FilterState, b: FilterState) {
-  const normalize = (filter: FilterState) =>
-    JSON.stringify({
-      status: [...filter.status].sort(),
-      time: filter.time,
-      gender: [...filter.gender].sort(),
-    });
-  return normalize(a) === normalize(b);
+  return FILTER_SECTIONS.every((section) =>
+    section.options.every(
+      (option) => isChipOn(a, section, option.value) === isChipOn(b, section, option.value),
+    ),
+  );
 }
 
 export function summarizeFilter(filter: FilterState) {
-  const labels = [
-    ...STATUS_OPTIONS.filter((option) => filter.status.includes(option.value)),
-    ...TIME_OPTIONS.filter((option) => option.value === filter.time),
-    ...GENDER_OPTIONS.filter((option) => filter.gender.includes(option.value)),
-  ].map((option) => option.label);
+  const labels = FILTER_SECTIONS.flatMap((section) =>
+    section.options
+      .filter((option) => isChipOn(filter, section, option.value))
+      .map((option) => option.label),
+  );
 
   if (labels.length === 0) return '조건 없음';
   if (labels.length === 1) return labels[0];

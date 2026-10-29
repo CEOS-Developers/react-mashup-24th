@@ -5,9 +5,9 @@ import BottomSheet from './common/BottomSheet';
 import ChipButton from './common/ChipButton';
 import Modal from './Modal';
 import TrashIcon from '../assets/icons/icon-trash.svg?react';
-import { EMPTY_FILTER, GENDER_OPTIONS, STATUS_OPTIONS, TIME_OPTIONS } from '../constants/filter';
+import { EMPTY_FILTER, FILTER_SECTIONS } from '../constants/filter';
 import type { FilterPreset, FilterState } from '../types/filter';
-import { countFilter, isSameFilter, summarizeFilter, toggleValue } from '../utils/filter';
+import { countFilter, isChipOn, isSameFilter, summarizeFilter, toggleChip } from '../utils/filter';
 import PresetNameModal from './PresetNameModal';
 
 type FilterBottomSheetProps = {
@@ -95,47 +95,19 @@ function FilterBottomSheet({
           </button>
         </div>
 
-        <FilterSection title="상태">
-          {STATUS_OPTIONS.map((option) => (
-            <ChipButton
-              key={option.value}
-              checked={draft.status.includes(option.value)}
-              onClick={() =>
-                setDraft({ ...draft, status: toggleValue(draft.status, option.value) })
-              }
-            >
-              {option.label}
-            </ChipButton>
-          ))}
-        </FilterSection>
-
-        <FilterSection title="시간">
-          {TIME_OPTIONS.map((option) => (
-            <ChipButton
-              key={option.value}
-              checked={draft.time === option.value}
-              onClick={() =>
-                setDraft({ ...draft, time: draft.time === option.value ? null : option.value })
-              }
-            >
-              {option.label}
-            </ChipButton>
-          ))}
-        </FilterSection>
-
-        <FilterSection title="성별">
-          {GENDER_OPTIONS.map((option) => (
-            <ChipButton
-              key={option.value}
-              checked={draft.gender.includes(option.value)}
-              onClick={() =>
-                setDraft({ ...draft, gender: toggleValue(draft.gender, option.value) })
-              }
-            >
-              {option.label}
-            </ChipButton>
-          ))}
-        </FilterSection>
+        {FILTER_SECTIONS.map((section) => (
+          <FilterSection key={section.title} title={section.title}>
+            {section.options.map((option) => (
+              <ChipButton
+                key={option.value}
+                checked={isChipOn(draft, section, option.value)}
+                onClick={() => setDraft(toggleChip(draft, section, option.value))}
+              >
+                {option.label}
+              </ChipButton>
+            ))}
+          </FilterSection>
+        ))}
 
         <div className="sticky bottom-0 flex gap-2 bg-bg-layer-floating pt-4">
           <ActionButton
