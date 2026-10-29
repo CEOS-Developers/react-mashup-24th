@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { EMPTY_FILTER } from '../constants/filter';
 import type { FilterState } from '../types/filter';
 import { formatDateKey } from '../utils/date';
-import { countFilter } from '../utils/filter';
+import { countFilter, isSameFilter } from '../utils/filter';
 import Calendar from '../components/Calendar';
 import MatchCard from '../components/match/MatchCard';
 import { mockMatches } from '../mocks/matches';
@@ -11,11 +11,14 @@ import FilterBottomSheet from '../components/FilterBottomSheet';
 import Banner from '../components/Banner';
 import CategoryChips from '../components/CategoryChips';
 import MainTabs from '../components/MainTabs';
+import { usePresets } from '../hooks/usePresets';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
   const [appliedFilter, setAppliedFilter] = useState<FilterState>(EMPTY_FILTER);
-  const [appliedPresetName, setAppliedPresetName] = useState<string | null>(null);
+  const { presets, addPreset, removePreset } = usePresets();
+  const appliedPresetName =
+    presets.find((preset) => isSameFilter(preset.filter, appliedFilter))?.name ?? null;
   const [hideClosed, setHideClosed] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState(
@@ -63,15 +66,14 @@ function HomePage() {
           </li>
         ))}
       </ul>
-
       <FilterBottomSheet
         open={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
         appliedFilter={appliedFilter}
-        onApply={(filter, presetName) => {
-          setAppliedFilter(filter);
-          setAppliedPresetName(presetName);
-        }}
+        presets={presets}
+        onAddPreset={addPreset}
+        onRemovePreset={removePreset}
+        onApply={setAppliedFilter}
       />
     </div>
   );

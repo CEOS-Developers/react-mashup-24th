@@ -5,17 +5,19 @@ import BottomSheet from './common/BottomSheet';
 import ChipButton from './common/ChipButton';
 import Modal from './Modal';
 import TrashIcon from '../assets/icons/icon-trash.svg?react';
-import { EMPTY_FILTER, GENDER_OPTIONS, STATUS_OPTIONS, TIME_OPTIONS } from '../constants/filter';
-import { usePresets } from '../hooks/usePresets';
+import { EMPTY_FILTER, FILTER_SECTIONS } from '../constants/filter';
 import type { FilterPreset, FilterState } from '../types/filter';
-import { countFilter, isSameFilter, summarizeFilter, toggleValue } from '../utils/filter';
+import { countFilter, isChipOn, isSameFilter, summarizeFilter, toggleChip } from '../utils/filter';
 import PresetNameModal from './PresetNameModal';
 
 type FilterBottomSheetProps = {
   open: boolean;
   onClose: () => void;
   appliedFilter: FilterState;
-  onApply: (filter: FilterState, presetName: string | null) => void;
+  presets: FilterPreset[];
+  onAddPreset: (name: string, filter: FilterState) => void;
+  onRemovePreset: (id: string) => void;
+  onApply: (filter: FilterState) => void;
 };
 
 function FilterSection({ title, children }: { title: string; children: ReactNode }) {
@@ -27,9 +29,16 @@ function FilterSection({ title, children }: { title: string; children: ReactNode
   );
 }
 
-function FilterBottomSheet({ open, onClose, appliedFilter, onApply }: FilterBottomSheetProps) {
+function FilterBottomSheet({
+  open,
+  onClose,
+  appliedFilter,
+  presets,
+  onAddPreset,
+  onRemovePreset,
+  onApply,
+}: FilterBottomSheetProps) {
   const [draft, setDraft] = useState<FilterState>(appliedFilter);
-  const { presets, addPreset, removePreset } = usePresets();
   const [isSaveOpen, setIsSaveOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<FilterPreset | null>(null);
 
@@ -37,9 +46,10 @@ function FilterBottomSheet({ open, onClose, appliedFilter, onApply }: FilterBott
     if (open) setDraft(appliedFilter);
   }, [open, appliedFilter]);
 
+  const hasSamePreset = presets.some((preset) => isSameFilter(preset.filter, draft));
+
   const handleApply = () => {
-    const matchedPreset = presets.find((preset) => isSameFilter(preset.filter, draft));
-    onApply(draft, matchedPreset ? matchedPreset.name : null);
+    onApply(draft);
     onClose();
   };
 
@@ -48,33 +58,32 @@ function FilterBottomSheet({ open, onClose, appliedFilter, onApply }: FilterBott
       <BottomSheet open={open} onClose={onClose} title="필터" size="large">
         {presets.length > 0 && (
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pt-2 pb-3 [scrollbar-width:none]">
-            {presets.map((preset) => (
-              <div
-                key={preset.id}
-                className={`flex w-[140px] shrink-0 flex-col gap-1 rounded-medium p-3 ${isSameFilter(preset.filter, draft) ? 'bg-bg-brand-subtle' : 'bg-bg-neutral-subtle'}`}
-              >
-                <div className="flex items-center justify-between gap-1">
+            {presets.map((preset) => {
+              const isSelected = isSameFilter(preset.filter, draft);
+              return (
+                <div key={preset.id} className="relative w-[140px] shrink-0">
                   <button
                     type="button"
-                    onClick={() => setDraft(preset.filter)}
-                    className="min-w-0 flex-1 cursor-pointer truncate text-left typo-body-medium-sb"
+                    aria-pressed={isSelected}
+                    onClick={() => setDraft(isSelected ? EMPTY_FILTER : preset.filter)}
+                    className={`flex w-full cursor-pointer flex-col gap-1 rounded-medium p-3 text-left ${isSelected ? 'bg-bg-brand-subtle' : 'bg-bg-neutral-subtle'}`}
                   >
-                    {preset.name}
+                    <span className="truncate pr-7 typo-body-medium-sb">{preset.name}</span>
+                    <span className="truncate typo-body-small-md text-fg-neutral-muted">
+                      {summarizeFilter(preset.filter)}
+                    </span>
                   </button>
                   <button
                     type="button"
                     aria-label={`${preset.name} 삭제`}
                     onClick={() => setDeleteTarget(preset)}
-                    className="flex size-6 shrink-0 cursor-pointer items-center justify-center text-fg-neutral-subtle"
+                    className="absolute top-2.5 right-3 flex size-6 cursor-pointer items-center justify-center text-fg-neutral-subtle"
                   >
                     <TrashIcon />
                   </button>
                 </div>
-                <p className="truncate typo-body-small-md text-fg-neutral-muted">
-                  {summarizeFilter(preset.filter)}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -88,52 +97,24 @@ function FilterBottomSheet({ open, onClose, appliedFilter, onApply }: FilterBott
           </button>
         </div>
 
-        <FilterSection title="상태">
-          {STATUS_OPTIONS.map((option) => (
-            <ChipButton
-              key={option.value}
-              checked={draft.status.includes(option.value)}
-              onClick={() =>
-                setDraft({ ...draft, status: toggleValue(draft.status, option.value) })
-              }
-            >
-              {option.label}
-            </ChipButton>
-          ))}
-        </FilterSection>
-
-        <FilterSection title="시간">
-          {TIME_OPTIONS.map((option) => (
-            <ChipButton
-              key={option.value}
-              checked={draft.time === option.value}
-              onClick={() =>
-                setDraft({ ...draft, time: draft.time === option.value ? null : option.value })
-              }
-            >
-              {option.label}
-            </ChipButton>
-          ))}
-        </FilterSection>
-
-        <FilterSection title="성별">
-          {GENDER_OPTIONS.map((option) => (
-            <ChipButton
-              key={option.value}
-              checked={draft.gender.includes(option.value)}
-              onClick={() =>
-                setDraft({ ...draft, gender: toggleValue(draft.gender, option.value) })
-              }
-            >
-              {option.label}
-            </ChipButton>
-          ))}
-        </FilterSection>
+        {FILTER_SECTIONS.map((section) => (
+          <FilterSection key={section.title} title={section.title}>
+            {section.options.map((option) => (
+              <ChipButton
+                key={option.value}
+                checked={isChipOn(draft, section, option.value)}
+                onClick={() => setDraft(toggleChip(draft, section, option.value))}
+              >
+                {option.label}
+              </ChipButton>
+            ))}
+          </FilterSection>
+        ))}
 
         <div className="sticky bottom-0 flex gap-2 bg-bg-layer-floating pt-4">
           <ActionButton
             variant="secondary"
-            disabled={countFilter(draft) === 0}
+            disabled={countFilter(draft) === 0 || hasSamePreset}
             onClick={() => setIsSaveOpen(true)}
           >
             프리셋에 저장
@@ -147,7 +128,7 @@ function FilterBottomSheet({ open, onClose, appliedFilter, onApply }: FilterBott
         onClose={() => setIsSaveOpen(false)}
         existingNames={presets.map((preset) => preset.name)}
         onSubmit={(name) => {
-          addPreset(name, draft);
+          onAddPreset(name, draft);
           setIsSaveOpen(false);
         }}
       />
@@ -160,7 +141,7 @@ function FilterBottomSheet({ open, onClose, appliedFilter, onApply }: FilterBott
           </ActionButton>
           <ActionButton
             onClick={() => {
-              if (deleteTarget) removePreset(deleteTarget.id);
+              if (deleteTarget) onRemovePreset(deleteTarget.id);
               setDeleteTarget(null);
             }}
           >

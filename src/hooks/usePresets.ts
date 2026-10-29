@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FilterPreset, FilterState } from '../types/filter';
 
-const STORAGE_KEY = 'plab-filter-presets';
+const STORAGE_KEY = 'plab-filter-presets-v2';
 
 function readPresets(): FilterPreset[] {
   try {
