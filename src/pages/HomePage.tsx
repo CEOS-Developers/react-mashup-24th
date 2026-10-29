@@ -3,7 +3,7 @@ import { isAxiosError } from 'axios';
 import { EMPTY_FILTER } from '../constants/filter';
 import type { FilterState } from '../types/filter';
 import { formatDateKey } from '../utils/date';
-import { countFilter, isSameFilter } from '../utils/filter';
+import { countFilter, isSameFilter, toMatchFilters } from '../utils/filter';
 import Calendar from '../components/Calendar';
 import MatchCard from '../components/match/MatchCard';
 import { useMatches } from '../hooks/useMatches';
@@ -14,12 +14,12 @@ import FilterBottomSheet from '../components/FilterBottomSheet';
 import Banner from '../components/Banner';
 import CategoryChips from '../components/CategoryChips';
 import MainTabs from '../components/MainTabs';
-import { usePresets } from '../hooks/usePresets';
+import { useMatchPresets } from '../hooks/useMatchPresets';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
   const [appliedFilter, setAppliedFilter] = useState<FilterState>(EMPTY_FILTER);
-  const { presets, addPreset, removePreset } = usePresets();
+  const { presets, addPreset, removePreset } = useMatchPresets();
   const appliedPresetName =
     presets.find((preset) => isSameFilter(preset.filter, appliedFilter))?.name ?? null;
   const [hideClosed, setHideClosed] = useState(false);
@@ -36,16 +36,7 @@ function HomePage() {
     hasNextPage,
     fetchNextPage,
     refetch,
-  } = useMatches({
-    ...appliedFilter,
-    date: selectedDate,
-    hideClosed,
-    timeAfter: appliedFilter.timeAfter ?? undefined,
-    gender: appliedFilter.gender ?? undefined,
-    // 미선택 칩은 false 조건으로 검색하지 않고 생략합니다.
-    earlybird: appliedFilter.earlybird || undefined,
-    shoeRental: appliedFilter.shoeRental || undefined,
-  });
+  } = useMatches({ ...toMatchFilters(appliedFilter), date: selectedDate, hideClosed });
 
   const isFilterRequiredError =
     isAxiosError<BaseResponse<unknown>>(error) && error.response?.data?.code === 'MATCH4001';
