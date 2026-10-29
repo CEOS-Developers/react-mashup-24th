@@ -1,17 +1,29 @@
 import { useCallback, useState } from 'react';
 import { isAxiosError } from 'axios';
+import { EMPTY_FILTER } from '../constants/filter';
+import type { FilterState } from '../types/filter';
 import { formatDateKey } from '../utils/date';
+import { countFilter, isSameFilter } from '../utils/filter';
 import Calendar from '../components/Calendar';
 import MatchCard from '../components/match/MatchCard';
 import { useMatches } from '../hooks/useMatches';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import type { MatchFilters } from '../types/match';
 import type { BaseResponse } from '../types/response';
+import FilterBar from '../components/FilterBar';
+import FilterBottomSheet from '../components/FilterBottomSheet';
+import Banner from '../components/Banner';
+import CategoryChips from '../components/CategoryChips';
+import MainTabs from '../components/MainTabs';
+import { usePresets } from '../hooks/usePresets';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
-  // 바텀시트 연결 시 setAppliedFilters를 함께 꺼내 확정·초기화 버튼에 연결. 꼭 이걸 사용하지 않아도 됨. 입맛에 맞게 사용하자..
-  const [appliedFilters] = useState<MatchFilters>({});
+  const [appliedFilter, setAppliedFilter] = useState<FilterState>(EMPTY_FILTER);
+  const { presets, addPreset, removePreset } = usePresets();
+  const appliedPresetName =
+    presets.find((preset) => isSameFilter(preset.filter, appliedFilter))?.name ?? null;
+  const [hideClosed, setHideClosed] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const {
     data,
@@ -24,7 +36,16 @@ function HomePage() {
     hasNextPage,
     fetchNextPage,
     refetch,
-  } = useMatches({ ...appliedFilters, date: selectedDate });
+  } = useMatches({
+    ...appliedFilter,
+    date: selectedDate,
+    hideClosed,
+    timeAfter: appliedFilter.timeAfter ?? undefined,
+    gender: appliedFilter.gender ?? undefined,
+    // 미선택 칩은 false 조건으로 검색하지 않고 생략합니다.
+    earlybird: appliedFilter.earlybird || undefined,
+    shoeRental: appliedFilter.shoeRental || undefined,
+  });
 
   const isFilterRequiredError =
     isAxiosError<BaseResponse<unknown>>(error) && error.response?.data?.code === 'MATCH4001';
@@ -37,24 +58,20 @@ function HomePage() {
 
   return (
     <div className="text-fg-neutral-default">
-      <section className="flex h-13 items-center bg-bg-neutral-weak px-4">
-        <h1 className="typo-body-medium-sb">1번 영역 · 52px</h1>
-      </section>
+      <MainTabs selected="소셜 매치" />
+      <CategoryChips />
+      <Banner />
 
-      <section className="py-2.5" aria-label="2번 영역">
-        <div className="flex h-8 items-center bg-bg-accent-blue-weak px-4">
-          <h2 className="typo-body-medium-sb">2번 영역 · 32px · 위아래 10px</h2>
-        </div>
-      </section>
-
-      <section className="pt-3 pb-4" aria-label="3번 영역">
-        <div className="flex h-29 flex-col justify-center gap-1 bg-bg-accent-red-weak px-4">
-          <h2 className="typo-body-medium-sb">3번 영역 · 116px</h2>
-          <p className="typo-body-small-md text-fg-neutral-muted">위 12px · 아래 16px</p>
-        </div>
-      </section>
       <section className="sticky top-0 z-20 flex flex-col gap-5 bg-bg-neutral-default pb-5">
         <Calendar selectedKey={selectedDate} onSelect={setSelectedDate} />
+        <FilterBar
+          filterCount={countFilter(appliedFilter)}
+          presetName={appliedPresetName}
+          hideClosed={hideClosed}
+          onRegionClick={() => {}}
+          onFilterClick={() => setIsFilterOpen(true)}
+          onHideClosedToggle={() => setHideClosed((prev) => !prev)}
+        />
       </section>
 
       <ul aria-label="소셜 매치 목록" aria-busy={isFetching}>
@@ -95,6 +112,16 @@ function HomePage() {
           <p role="status">다음 매치를 불러오고 있어요.</p>
         ) : null}
       </div>
+
+      <FilterBottomSheet
+        open={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        appliedFilter={appliedFilter}
+        presets={presets}
+        onAddPreset={addPreset}
+        onRemovePreset={removePreset}
+        onApply={setAppliedFilter}
+      />
     </div>
   );
 }
