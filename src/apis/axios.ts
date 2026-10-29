@@ -3,7 +3,7 @@ import type { InternalAxiosRequestConfig } from 'axios';
 import type { BaseResponse } from '../types/response';
 import { clearAccessToken, getAccessToken, refreshAccessToken } from './auth';
 
-type ErrorResponse = Pick<BaseResponse<never>, 'isSuccess' | 'code' | 'message'>;
+type ErrorResponse = BaseResponse<Record<string, string>>;
 
 interface RetryRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -35,12 +35,16 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config as RetryRequestConfig | undefined;
     const code = error.response.data?.code;
 
-    if (code === 'AUTH_INVALID_GUEST') {
+    // 토큰 갱신으로 복구할 수 없는 인증 오류는 그대로 전달합니다.
+    if (code === 'AUTH_INVALID_GUEST' || code === 'AUTH_INVALID_REFRESH_TOKEN') {
       clearAccessToken();
       return Promise.reject(error);
     }
 
-    if (!originalRequest || (code !== 'AUTH_UNAUTHORIZED' && code !== 'AUTH_INVALID_TOKEN')) {
+    if (
+      !originalRequest ||
+      (code !== 'AUTH_UNAUTHORIZED' && code !== 'AUTH_INVALID_TOKEN' && code !== 'COMMON401')
+    ) {
       return Promise.reject(error);
     }
 
