@@ -81,8 +81,14 @@ export const initializeAuth = (): Promise<void> => {
       try {
         await refreshAccessToken();
       } catch (error: unknown) {
-        // 갱신 API의 401만 인증 복원 불가로 처리합니다. 서버/네트워크 오류는 전달합니다.
-        if (!axios.isAxiosError(error) || error.response?.status !== 401) {
+        if (!axios.isAxiosError<BaseResponse<unknown>>(error) || error.response?.status !== 401) {
+          throw error;
+        }
+
+        const code = error.response.data?.code;
+
+        // Refresh Token 또는 게스트가 유효하지 않을 때만 새 게스트를 생성합니다.
+        if (code !== 'AUTH_INVALID_REFRESH_TOKEN' && code !== 'AUTH_INVALID_GUEST') {
           throw error;
         }
 

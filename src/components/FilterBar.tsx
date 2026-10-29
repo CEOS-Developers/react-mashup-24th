@@ -27,8 +27,15 @@ function FilterBar({
         <ChipButton icon={iconLocation} selected onClick={onRegionClick} aria-haspopup="dialog">
           내 지역
         </ChipButton>
-        <ChipButton withIcon selected={filterCount > 0} onClick={onFilterClick}>
-          {presetName ?? (filterCount > 0 ? `필터 ${filterCount}` : '필터')}
+        <ChipButton
+          withIcon
+          selected={filterCount > 0}
+          onClick={onFilterClick}
+          className="max-w-[120px]"
+        >
+          <span className="min-w-0 truncate">
+            {presetName ?? (filterCount > 0 ? `필터 ${filterCount}` : '필터')}
+          </span>
         </ChipButton>
         <ChipButton selected={hideClosed} onClick={onHideClosedToggle}>
           마감 가리기

@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { isAxiosError } from 'axios';
 import { EMPTY_FILTER } from '../constants/filter';
 import type { FilterState } from '../types/filter';
 import { formatDateKey } from '../utils/date';
-import { countFilter } from '../utils/filter';
+import { countFilter, isSameFilter } from '../utils/filter';
 import Calendar from '../components/Calendar';
 import MatchCard from '../components/match/MatchCard';
-import { mockMatches } from '../mocks/matches';
+import { useMatches } from '../hooks/useMatches';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import type { BaseResponse } from '../types/response';
 import FilterBar from '../components/FilterBar';
 import FilterBottomSheet from '../components/FilterBottomSheet';
 import Banner from '../components/Banner';
@@ -13,11 +16,14 @@ import CategoryChips from '../components/CategoryChips';
 import MainTabs from '../components/MainTabs';
 import RegionBottomSheet from '../components/RegionBottomSheet';
 import type { RegionSelection } from '../types/region';
+import { usePresets } from '../hooks/usePresets';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
   const [appliedFilter, setAppliedFilter] = useState<FilterState>(EMPTY_FILTER);
-  const [appliedPresetName, setAppliedPresetName] = useState<string | null>(null);
+  const { presets, addPreset, removePreset } = usePresets();
+  const appliedPresetName =
+    presets.find((preset) => isSameFilter(preset.filter, appliedFilter))?.name ?? null;
   const [hideClosed, setHideClosed] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isRegionOpen, setIsRegionOpen] = useState(false);
@@ -25,18 +31,37 @@ function HomePage() {
     cityId: null,
     areaIds: [],
   });
-  const [favoriteIds, setFavoriteIds] = useState(
-    () => new Set(mockMatches.filter((match) => match.isFavorite).map((match) => match.id)),
-  );
 
-  const toggleFavorite = (id: string) => {
-    setFavoriteIds((previous) => {
-      const next = new Set(previous);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const {
+    data,
+    error,
+    isPending,
+    isError,
+    isFetching,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+  } = useMatches({
+    ...appliedFilter,
+    date: selectedDate,
+    hideClosed,
+    timeAfter: appliedFilter.timeAfter ?? undefined,
+    gender: appliedFilter.gender ?? undefined,
+    // 미선택 칩은 false 조건으로 검색하지 않고 생략합니다.
+    earlybird: appliedFilter.earlybird || undefined,
+    shoeRental: appliedFilter.shoeRental || undefined,
+  });
+
+  const isFilterRequiredError =
+    isAxiosError<BaseResponse<unknown>>(error) && error.response?.data?.code === 'MATCH4001';
+  const matches = data?.pages.flatMap((page) => page.content) ?? [];
+  const loadMore = useCallback(() => fetchNextPage({ cancelRefetch: false }), [fetchNextPage]);
+  const loadMoreRef = useInfiniteScroll({
+    enabled: hasNextPage && !isFetching && !isError,
+    onLoadMore: loadMore,
+  });
 
   return (
     <div className="text-fg-neutral-default">
@@ -57,17 +82,10 @@ function HomePage() {
         />
       </section>
 
-      <ul aria-label="소셜 매치 목록">
-        {mockMatches.map((match) => (
-          <li key={match.id}>
-            <MatchCard
-              match={match}
-              selected={favoriteIds.has(match.id)}
-              favoriteCount={
-                match.favoriteCount + Number(favoriteIds.has(match.id)) - Number(match.isFavorite)
-              }
-              onFavoriteClick={() => toggleFavorite(match.id)}
-            />
+      <ul aria-label="소셜 매치 목록" aria-busy={isFetching}>
+        {matches.map((match) => (
+          <li key={match.matchId}>
+            <MatchCard match={match} />
           </li>
         ))}
       </ul>
@@ -78,14 +96,45 @@ function HomePage() {
         onApply={setAppliedRegion}
       />
 
+      <div
+        ref={loadMoreRef}
+        className="flex min-h-16 flex-col items-center justify-center gap-3 px-4 py-5 text-center text-fg-neutral-muted typo-body-medium-md"
+      >
+        {isPending ? (
+          <p role="status">매치를 불러오고 있어요.</p>
+        ) : isError ? (
+          <>
+            <p role="alert">
+              {isFilterRequiredError
+                ? '필터를 하나 이상 선택해 주세요.'
+                : isFetchNextPageError
+                  ? '다음 매치를 불러오지 못했어요.'
+                  : '매치 목록을 불러오지 못했어요.'}
+            </p>
+            <button
+              type="button"
+              disabled={isFetching}
+              onClick={() => (isFetchNextPageError ? loadMore() : refetch())}
+              className="h-10 cursor-pointer rounded-full bg-bg-brand-subtle px-4 text-fg-neutral-default typo-button-medium-md disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              다시 시도
+            </button>
+          </>
+        ) : matches.length === 0 ? (
+          <p role="status">선택한 날짜에 매치가 없어요.</p>
+        ) : isFetchingNextPage ? (
+          <p role="status">다음 매치를 불러오고 있어요.</p>
+        ) : null}
+      </div>
+
       <FilterBottomSheet
         open={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
         appliedFilter={appliedFilter}
-        onApply={(filter, presetName) => {
-          setAppliedFilter(filter);
-          setAppliedPresetName(presetName);
-        }}
+        presets={presets}
+        onAddPreset={addPreset}
+        onRemovePreset={removePreset}
+        onApply={setAppliedFilter}
       />
     </div>
   );
