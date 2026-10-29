@@ -11,6 +11,11 @@ export interface AreaResponse {
   isFavorite: boolean;
 }
 
+export interface FavoriteAreaResponse {
+  areaId: number;
+  isFavorite: boolean;
+}
+
 export interface RegionSelection {
   cityId: number | null;
   areaIds: number[];
