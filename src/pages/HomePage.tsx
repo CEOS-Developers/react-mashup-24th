@@ -11,6 +11,8 @@ import FilterBottomSheet from '../components/FilterBottomSheet';
 import Banner from '../components/Banner';
 import CategoryChips from '../components/CategoryChips';
 import MainTabs from '../components/MainTabs';
+import RegionBottomSheet from '../components/RegionBottomSheet';
+import type { RegionSelection } from '../types/region';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
@@ -18,6 +20,11 @@ function HomePage() {
   const [appliedPresetName, setAppliedPresetName] = useState<string | null>(null);
   const [hideClosed, setHideClosed] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isRegionOpen, setIsRegionOpen] = useState(false);
+  const [, setAppliedRegion] = useState<RegionSelection>({
+    cityId: null,
+    areaIds: [],
+  });
   const [favoriteIds, setFavoriteIds] = useState(
     () => new Set(mockMatches.filter((match) => match.isFavorite).map((match) => match.id)),
   );
@@ -43,9 +50,10 @@ function HomePage() {
           filterCount={countFilter(appliedFilter)}
           presetName={appliedPresetName}
           hideClosed={hideClosed}
-          onRegionClick={() => {}}
+          onRegionClick={() => setIsRegionOpen(true)}
           onFilterClick={() => setIsFilterOpen(true)}
           onHideClosedToggle={() => setHideClosed((prev) => !prev)}
+          onMapClick={() => setIsRegionOpen(true)}
         />
       </section>
 
@@ -63,6 +71,12 @@ function HomePage() {
           </li>
         ))}
       </ul>
+
+      <RegionBottomSheet
+        open={isRegionOpen}
+        onClose={() => setIsRegionOpen(false)}
+        onApply={setAppliedRegion}
+      />
 
       <FilterBottomSheet
         open={isFilterOpen}
