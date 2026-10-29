@@ -28,3 +28,11 @@ src/
 - 특정 컴포넌트에서만 사용하는 타입은 해당 컴포넌트 파일에 둡니다. 여러 파일에서 공유할 때 `types/`로 분리합니다.
 - 한 페이지에서만 쓰는 컴포넌트가 늘어나면 `pages/home/HomePage.tsx`, `pages/home/components/`처럼 페이지 폴더 안에 모읍니다. 여러 페이지에서 재사용하면 `components/`로 옮깁니다.
 - 빈 폴더의 `.gitkeep`은 Git에 폴더를 남기기 위한 파일입니다. 실제 파일을 추가한 뒤 삭제해도 됩니다.
+
+## 로컬 API 프록시
+
+- `.env`의 `VITE_API_BASE_URL`에는 `/api`를 제외한 백엔드 서버 주소를 설정합니다.
+- Axios의 기본 주소는 `/`이며, API 함수는 `/api/auth/guest`처럼 `/api`로 시작하는 경로를 사용합니다.
+- 개발 중에는 `http://localhost:5173/api/...` 요청을 Vite가 백엔드로 전달합니다. 쿠키의 `SameSite`, `Secure`, `HttpOnly` 속성은 유지합니다.
+- `Origin` 헤더는 그대로 전달하므로 백엔드의 `http://localhost:5173` 허용 설정을 유지합니다.
+- 이 프록시는 개발 서버용입니다. 배포 시에는 Vercel 등 배포 서버에도 `/api` 전달 규칙이 필요합니다.
