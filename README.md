@@ -1,69 +1,58 @@
-# React + TypeScript + Vite
+# 플랩풋볼 프론트엔드
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+플랩풋볼 프론트엔드 프로젝트입니다.
 
-Currently, two official plugins are available:
+React, TypeScript, Vite, Tailwind CSS, React Router를 사용하며, 서버 요청은 Axios와 TanStack Query로 처리합니다.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 로컬 실행
 
-## Expanding the ESLint configuration
+처음 설정할 때 의존성을 설치하고 환경 변수 파일을 생성합니다.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+pnpm install
+cp .env.example .env
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+`.env`의 백엔드 주소를 실제 서버 주소로 지정합니다. 아래 주소는 예시입니다.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```dotenv
+VITE_API_BASE_URL=https://api.example.com
 ```
+
+- `VITE_API_BASE_URL`: `/api`를 제외한 백엔드 서버 주소입니다. 개발 서버 실행에 필요합니다.
+
+```sh
+pnpm dev
+```
+
+개발 서버 주소는 `http://localhost:5173`입니다. 해당 포트가 사용 중이면 실행을 중단합니다.
+
+## 서버 연동 기능
+
+| 기능           | 현재 동작                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 게스트 인증    | 진입 시 인증을 복원하고, 복원 요청이 401이면 게스트를 생성합니다.                                                   |
+| 도시·관심 지역 | 실제 API로 조회하며, 하트 등록·해제를 낙관적으로 반영합니다. 실패하면 복구하고 오류를 표시합니다.                   |
+| 지역 적용      | 관심 지역 ID와 기존 날짜·필터 조건으로 매치를 조회합니다. 적용된 지역이 있을 때 내 지역 칩을 연두색으로 표시합니다. |
+
+## 개발용 API 프록시
+
+개발 환경에서는 Vite 개발 서버가 프록시 서버로 동작합니다. 브라우저는 `http://localhost:5173/api/...`로 요청하고, 개발 서버가 이 요청을 `VITE_API_BASE_URL`의 백엔드 서버로 전달합니다. 설정은 `vite.config.ts`의 `server.proxy`에 있습니다.
+
+Axios의 기본 주소는 `/`이며, API 함수는 `/api`로 시작하는 경로를 사용합니다. 요청에는 쿠키와 메모리의 Access Token을 사용합니다. 인증 초기화가 완료되면 홈 화면을 표시합니다.
+
+개발용 프록시는 개발 서버에서 사용합니다. Vercel 배포용 `/api` 전달 설정은 `vercel.json`에 정의되어 있으며, 배포 환경에도 백엔드 주소를 설정해야 합니다.
+
+## 명령어
+
+| 명령어              | 설명                                |
+| ------------------- | ----------------------------------- |
+| `pnpm dev`          | 개발 서버 실행                      |
+| `pnpm build`        | TypeScript 검사 후 배포용 빌드 생성 |
+| `pnpm preview`      | 빌드 결과 미리보기                  |
+| `pnpm lint`         | 소스 코드 린트 검사                 |
+| `pnpm lint:fix`     | 린트 자동 수정                      |
+| `pnpm format`       | 소스 코드 포맷 적용                 |
+| `pnpm format:check` | 소스 코드 포맷 검사                 |
+
+소스 구조와 기능별 처리 흐름은 [src/README.md](src/README.md)를 참고하세요.
