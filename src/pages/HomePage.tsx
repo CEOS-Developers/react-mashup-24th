@@ -3,7 +3,7 @@ import { isAxiosError } from 'axios';
 import { EMPTY_FILTER } from '../constants/filter';
 import type { FilterState } from '../types/filter';
 import { formatDateKey } from '../utils/date';
-import { countFilter, isSameFilter } from '../utils/filter';
+import { countFilter, isSameFilter, toMatchFilters } from '../utils/filter';
 import Calendar from '../components/Calendar';
 import MatchCard from '../components/match/MatchCard';
 import { useMatches } from '../hooks/useMatches';
@@ -14,14 +14,14 @@ import FilterBottomSheet from '../components/FilterBottomSheet';
 import Banner from '../components/Banner';
 import CategoryChips from '../components/CategoryChips';
 import MainTabs from '../components/MainTabs';
+import { useMatchPresets } from '../hooks/useMatchPresets';
 import RegionBottomSheet from '../components/RegionBottomSheet';
 import type { RegionSelection } from '../types/region';
-import { usePresets } from '../hooks/usePresets';
 
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
   const [appliedFilter, setAppliedFilter] = useState<FilterState>(EMPTY_FILTER);
-  const { presets, addPreset, removePreset } = usePresets();
+  const { presets, addPreset, removePreset, isPresetPending, presetError } = useMatchPresets();
   const appliedPresetName =
     presets.find((preset) => isSameFilter(preset.filter, appliedFilter))?.name ?? null;
   const [hideClosed, setHideClosed] = useState(false);
@@ -44,15 +44,10 @@ function HomePage() {
     fetchNextPage,
     refetch,
   } = useMatches({
-    ...appliedFilter,
+    ...toMatchFilters(appliedFilter),
     areaId: appliedRegion.areaIds,
     date: selectedDate,
     hideClosed,
-    timeAfter: appliedFilter.timeAfter ?? undefined,
-    gender: appliedFilter.gender ?? undefined,
-    // 미선택 칩은 false 조건으로 검색하지 않고 생략합니다.
-    earlybird: appliedFilter.earlybird || undefined,
-    shoeRental: appliedFilter.shoeRental || undefined,
   });
 
   const isFilterRequiredError =
@@ -136,6 +131,8 @@ function HomePage() {
         presets={presets}
         onAddPreset={addPreset}
         onRemovePreset={removePreset}
+        isPresetPending={isPresetPending}
+        presetError={presetError}
         onApply={setAppliedFilter}
       />
     </div>

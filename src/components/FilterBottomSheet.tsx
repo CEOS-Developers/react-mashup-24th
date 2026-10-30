@@ -18,6 +18,8 @@ type FilterBottomSheetProps = {
   onAddPreset: (name: string, filter: FilterState) => void;
   onRemovePreset: (id: string) => void;
   onApply: (filter: FilterState) => void;
+  isPresetPending: boolean;
+  presetError: Error | null;
 };
 
 function FilterSection({ title, children }: { title: string; children: ReactNode }) {
@@ -37,6 +39,8 @@ function FilterBottomSheet({
   onAddPreset,
   onRemovePreset,
   onApply,
+  isPresetPending,
+  presetError,
 }: FilterBottomSheetProps) {
   const [draft, setDraft] = useState<FilterState>(appliedFilter);
   const [isSaveOpen, setIsSaveOpen] = useState(false);
@@ -111,10 +115,16 @@ function FilterBottomSheet({
           </FilterSection>
         ))}
 
+        {presetError && (
+          <p role="alert" className="pt-2 typo-body-small-md text-fg-neutral-error">
+            프리셋을 저장하거나 삭제하지 못했어요. 다시 시도해 주세요.
+          </p>
+        )}
+
         <div className="sticky bottom-0 flex gap-2 bg-bg-layer-floating pt-4">
           <ActionButton
             variant="secondary"
-            disabled={countFilter(draft) === 0 || hasSamePreset}
+            disabled={countFilter(draft) === 0 || hasSamePreset || isPresetPending}
             onClick={() => setIsSaveOpen(true)}
           >
             프리셋에 저장
@@ -140,6 +150,7 @@ function FilterBottomSheet({
             취소
           </ActionButton>
           <ActionButton
+            disabled={isPresetPending}
             onClick={() => {
               if (deleteTarget) onRemovePreset(deleteTarget.id);
               setDeleteTarget(null);

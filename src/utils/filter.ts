@@ -55,3 +55,12 @@ export function summarizeFilter(filter: FilterState) {
   if (labels.length === 1) return labels[0];
   return `${labels[0]} 외 ${labels.length - 1}개`;
 }
+export function toMatchFilters(filter: FilterState) {
+  return {
+    ...filter,
+    timeAfter: filter.timeAfter ?? undefined,
+    gender: filter.gender ?? undefined,
+    shoeRental: filter.shoeRental || undefined,
+    earlybird: filter.earlybird || undefined,
+  };
+}
