@@ -21,7 +21,7 @@ import type { RegionSelection } from '../types/region';
 function HomePage() {
   const [selectedDate, setSelectedDate] = useState(() => formatDateKey(new Date()));
   const [appliedFilter, setAppliedFilter] = useState<FilterState>(EMPTY_FILTER);
-  const { presets, addPreset, removePreset } = useMatchPresets();
+  const { presets, addPreset, removePreset, isPresetPending, presetError } = useMatchPresets();
   const appliedPresetName =
     presets.find((preset) => isSameFilter(preset.filter, appliedFilter))?.name ?? null;
   const [hideClosed, setHideClosed] = useState(false);
@@ -131,6 +131,8 @@ function HomePage() {
         presets={presets}
         onAddPreset={addPreset}
         onRemovePreset={removePreset}
+        isPresetPending={isPresetPending}
+        presetError={presetError}
         onApply={setAppliedFilter}
       />
     </div>

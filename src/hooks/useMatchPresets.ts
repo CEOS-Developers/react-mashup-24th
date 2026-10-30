@@ -39,5 +39,11 @@ export function useMatchPresets() {
   const addPreset = (name: string, filter: FilterState) => addMutation.mutate({ name, filter });
   const removePreset = (id: string) => removeMutation.mutate(id);
 
-  return { presets, addPreset, removePreset };
+  return {
+    presets,
+    addPreset,
+    removePreset,
+    isPresetPending: addMutation.isPending || removeMutation.isPending,
+    presetError: addMutation.error ?? removeMutation.error,
+  };
 }
