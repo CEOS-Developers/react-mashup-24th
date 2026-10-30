@@ -1,0 +1,8 @@
+set -e
+if [ "$OS" = "Windows_NT" ]; then
+  npm.cmd run lint
+  npm.cmd run format:check
+else
+  npm run lint
+  npm run format:check
+fi

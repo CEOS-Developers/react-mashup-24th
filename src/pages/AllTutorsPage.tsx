@@ -1,0 +1,225 @@
+import { LoadingState } from '../components/ui/LoadingState'
+import { slowLoadingMessage } from '../hooks/useSlowLoading'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import tutorEmptyIcon from '../assets/icons/tutor-empty.svg'
+import filterResetIcon from '../assets/icons/filter-reset.svg'
+import { AppShell } from '../components/layout/AppShell'
+import { TutorPageHeader } from '../components/layout/TutorPageHeader'
+import { TutorCard } from '../features/tutors/components/TutorCard'
+import { TutorFilterPanel } from '../features/tutors/components/TutorFilterPanel'
+import { useServerBookmarks } from '../features/tutors/hooks/useServerBookmarks'
+import { buildTutorQuery } from '../features/tutors/api/tutorQuery'
+import { useTutorFilters } from '../features/tutors/hooks/useTutorFilters'
+import { useTutors } from '../features/tutors/hooks/useTutors'
+import './AllTutorsPage.css'
+
+export default function AllTutorsPage() {
+  const [toast, setToast] = useState('')
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const {
+    query,
+    savedOnly,
+    filters,
+    chips,
+    hasActiveFilters,
+    setQuery,
+    setSavedOnly,
+    toggleFilterValue,
+    removeFilterValue,
+    resetFilters,
+  } = useTutorFilters()
+
+  const {
+    tutors: visibleTutors,
+    loading,
+    slow,
+    error,
+    reload,
+  } = useTutors(buildTutorQuery(query, savedOnly, filters))
+  const { isSaved, isPending, toggleBookmark, storageError } =
+    useServerBookmarks(visibleTutors)
+  const hasQuery = query.trim().length > 0
+
+  useEffect(() => {
+    document.title = '전체 튜터 | Ringle'
+  }, [])
+
+  useEffect(() => {
+    if (!toast) return
+
+    const timer = setTimeout(() => setToast(''), 2500)
+    return () => clearTimeout(timer)
+  }, [toast])
+
+  return (
+    <AppShell onNotice={setToast}>
+      <main className="favorite-page">
+        <TutorPageHeader
+          tab="전체"
+          onTabChange={(tab) => {
+            if (tab === '추천') navigate('/tutors')
+            else setSavedOnly(false)
+          }}
+          query={query}
+          onQueryChange={setQuery}
+          onNotice={setToast}
+        />
+
+        {storageError && <p role="status">{storageError}</p>}
+
+        <div className="favorite-layout">
+          <TutorFilterPanel
+            savedOnly={savedOnly}
+            filters={filters}
+            onSavedOnlyChange={setSavedOnly}
+            onToggleFilter={toggleFilterValue}
+          />
+
+          <section className="all-tutors-results" aria-label="튜터 목록">
+            {hasActiveFilters && (
+              <div className="all-tutors-filter-toolbar">
+                <div
+                  className="all-tutors-filter-chips"
+                  role="group"
+                  aria-label="선택한 필터"
+                >
+                  {savedOnly && (
+                    <button
+                      type="button"
+                      className="favorite-filter-chip"
+                      aria-label="찜한 튜터 필터 해제"
+                      onClick={() => setSavedOnly(false)}
+                    >
+                      찜한 튜터 <span aria-hidden="true">×</span>
+                    </button>
+                  )}
+
+                  {chips.map((chip) => (
+                    <button
+                      key={chip.id}
+                      type="button"
+                      className="favorite-filter-chip"
+                      aria-label={`${chip.label} 필터 해제`}
+                      onClick={() => removeFilterValue(chip.key, chip.value)}
+                    >
+                      {chip.label} <span aria-hidden="true">×</span>
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="all-tutors-reset"
+                  onClick={resetFilters}
+                  aria-label="선택한 필터 전체 초기화"
+                >
+                  <img src={filterResetIcon} alt="" />
+                  <span>초기화</span>
+                </button>
+              </div>
+            )}
+
+            {loading && (
+              <LoadingState
+                label={slow ? slowLoadingMessage : '튜터를 불러오고 있어요.'}
+              />
+            )}
+
+            {error && (
+              <div role="alert">
+                <p>{error}</p>
+                <button type="button" onClick={reload}>
+                  다시 시도
+                </button>
+              </div>
+            )}
+
+            {!loading && !error && (
+              <>
+                <p className="favorite-tutor-count" role="status">
+                  {visibleTutors.length}명의 튜터
+                </p>
+
+                {visibleTutors.length === 0 ? (
+                  <div className="all-tutors-empty">
+                    <div className="all-tutors-empty-icon" aria-hidden="true">
+                      <img src={tutorEmptyIcon} alt="" />
+                    </div>
+
+                    <h2>
+                      {hasActiveFilters
+                        ? '조건을 만족하는 튜터가 없어요.'
+                        : hasQuery
+                          ? '검색 결과가 없어요.'
+                          : '등록된 튜터가 없어요.'}
+                    </h2>
+
+                    <p>
+                      {hasActiveFilters
+                        ? '필터를 다시 설정해보세요.'
+                        : hasQuery
+                          ? '검색어를 다시 확인해보세요.'
+                          : '잠시 후 다시 확인해주세요.'}
+                    </p>
+
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        className="all-tutors-empty-action"
+                        onClick={resetFilters}
+                      >
+                        필터 초기화
+                      </button>
+                    )}
+
+                    {hasQuery && (
+                      <button
+                        type="button"
+                        className="all-tutors-empty-action"
+                        onClick={() => setQuery('')}
+                      >
+                        검색어 지우기
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="tutor-grid favorite-tutor-grid">
+                    {visibleTutors.map((tutor) => (
+                      <TutorCard
+                        key={tutor.id}
+                        tutor={tutor}
+                        bookmarked={isSaved(tutor)}
+                        bookmarkDisabled={isPending(tutor)}
+                        onBookmark={() => {
+                          void toggleBookmark(tutor).then((success) => {
+                            if (success && savedOnly) reload()
+                          })
+                        }}
+                        onDetails={() =>
+                          navigate(`/tutors/${tutor.id}`, {
+                            state: {
+                              returnTo: `${location.pathname}${location.search}`,
+                            },
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        </div>
+      </main>
+
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
+      )}
+    </AppShell>
+  )
+}

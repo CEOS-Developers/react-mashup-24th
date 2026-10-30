@@ -1,0 +1,204 @@
+@reference '../../../index.css';
+
+.favorite-filter-panel.tutor-filter-panel {
+  align-self: start;
+  overflow: visible;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large);
+  background: var(--color-white);
+  color: #2f2d3d;
+}
+
+.tutor-filter-types {
+  display: grid;
+  gap: 20px;
+  padding-bottom: 20px;
+}
+
+.tutor-filter-type {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 28px;
+  cursor: pointer;
+}
+
+.tutor-filter-type-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: -0.18px;
+}
+
+.tutor-filter-recommended {
+  color: #663db8;
+}
+
+.tutor-filter-pointback {
+  color: #f87170;
+}
+
+.tutor-filter-panel input[type='checkbox'] {
+  appearance: none;
+  position: relative;
+  border: 1px solid #d9d8e1;
+  border-radius: 4px;
+  background: var(--color-white);
+  flex-shrink: 0;
+  width: 23px;
+  height: 23px;
+  margin: 0;
+  accent-color: #663db8;
+  cursor: pointer;
+}
+
+.tutor-filter-section {
+  padding: 20px 0;
+  border-top: 1px solid #e8e7ed;
+}
+
+.tutor-filter-section:last-child {
+  padding-bottom: 0;
+}
+
+.tutor-filter-section > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  list-style: none;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+}
+
+.tutor-filter-options {
+  display: grid;
+  gap: 20px;
+  padding: 16px 8px 0;
+}
+
+.tutor-filter-options label {
+  @apply text-label-16-medium;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 23px;
+  cursor: pointer;
+}
+
+.tutor-filter-options label span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tutor-filter-availability {
+  padding-top: 16px;
+}
+
+.tutor-filter-caption {
+  @apply text-label-16-medium;
+  margin: 0 0 16px;
+  color: #92919d;
+}
+
+.tutor-filter-days {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px 8px;
+  margin-bottom: 16px;
+}
+
+.tutor-filter-days button {
+  grid-column: span 3;
+}
+
+.tutor-filter-days button:nth-child(n + 5) {
+  grid-column: span 4;
+}
+
+.tutor-filter-times {
+  display: grid;
+  gap: 12px;
+}
+
+.tutor-filter-days button,
+.tutor-filter-times button {
+  @apply text-label-16-medium;
+  min-width: 0;
+  min-height: 45px;
+  border: 1px solid #e8e7ed;
+  border-radius: 4px;
+  background: var(--color-white);
+  color: #2f2d3d;
+  cursor: pointer;
+}
+
+.tutor-filter-days button {
+  padding: 10px 0;
+  text-align: center;
+}
+
+.tutor-filter-times button {
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.tutor-filter-panel button[aria-pressed='true'] {
+  border-color: #663db8;
+  background: #f5f0ff;
+  color: #663db8;
+}
+
+.tutor-filter-panel button:focus-visible,
+.tutor-filter-panel input:focus-visible,
+.tutor-filter-panel summary:focus-visible {
+  outline: 2px solid #663db8;
+  outline-offset: 3px;
+}
+
+.tutor-filter-section > summary::-webkit-details-marker {
+  display: none;
+}
+.tutor-filter-section > summary::after {
+  content: '';
+  width: 9px;
+  height: 9px;
+  margin-right: 3px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+.tutor-filter-section[open] > summary::after {
+  transform: rotate(225deg);
+}
+.tutor-filter-panel input[type='checkbox']:checked {
+  border-color: #663db8;
+  background: #663db8;
+}
+.tutor-filter-panel input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  width: 6px;
+  height: 11px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+@media (forced-colors: active) {
+  .tutor-filter-panel input[type='checkbox'] {
+    appearance: auto;
+  }
+  .tutor-filter-panel input[type='checkbox']:checked::after {
+    display: none;
+  }
+}
