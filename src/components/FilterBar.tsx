@@ -1,0 +1,67 @@
+import ChipButton from './common/ChipButton';
+import iconLocation from '../assets/icons/icon-location.svg';
+import MapIcon from '../assets/icons/icon-map.svg?react';
+
+type FilterBarProps = {
+  hasAppliedRegion: boolean;
+  filterCount: number;
+  presetName: string | null;
+  hideClosed: boolean;
+  onRegionClick: () => void;
+  onFilterClick: () => void;
+  onHideClosedToggle: () => void;
+  onMapClick?: () => void;
+};
+
+function FilterBar({
+  hasAppliedRegion,
+  filterCount,
+  presetName,
+  hideClosed,
+  onRegionClick,
+  onFilterClick,
+  onHideClosedToggle,
+  onMapClick,
+}: FilterBarProps) {
+  return (
+    <div className="flex items-center justify-between px-4">
+      <div className="flex items-center gap-2">
+        <ChipButton
+          icon={iconLocation}
+          selected={hasAppliedRegion}
+          onClick={onRegionClick}
+          aria-haspopup="dialog"
+        >
+          내 지역
+        </ChipButton>
+        <ChipButton
+          withIcon
+          selected={filterCount > 0}
+          onClick={onFilterClick}
+          className="max-w-[120px]"
+        >
+          <span className="min-w-0 truncate">
+            {presetName ?? (filterCount > 0 ? `필터 ${filterCount}` : '필터')}
+          </span>
+        </ChipButton>
+        <ChipButton selected={hideClosed} onClick={onHideClosedToggle}>
+          마감 가리기
+        </ChipButton>
+      </div>
+      <div className="flex items-center gap-2">
+        <span aria-hidden="true" className="h-8 w-px bg-border-weak" />
+        <button
+          type="button"
+          aria-label="지역 선택"
+          aria-haspopup="dialog"
+          onClick={onMapClick}
+          className="flex h-8 w-[34px] cursor-pointer items-center justify-center rounded-small border border-border-default text-fg-neutral-muted"
+        >
+          <MapIcon className="shrink-0" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default FilterBar;

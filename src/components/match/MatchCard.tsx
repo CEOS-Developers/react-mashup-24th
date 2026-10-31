@@ -1,0 +1,104 @@
+import {
+  GENDER_LABELS,
+  LEVEL_LABELS,
+  MATCH_STATUS_LABELS,
+  MATCH_TYPE_LABELS,
+} from '../../constants/match';
+import { useMutationFavoriteMatch } from '../../hooks/useMutationFavoriteMatch';
+import type { MatchListItemResponse } from '../../types/match';
+import { formatMatchTime } from '../../utils/date';
+import FavoriteButton from '../common/FavoriteButton';
+
+export type MatchCardProps = {
+  match: MatchListItemResponse;
+};
+
+function MatchCard({ match }: MatchCardProps) {
+  const { setFavorite, isPending } = useMutationFavoriteMatch(match.matchId);
+  const isClosingSoon = match.status === 'CLOSING_SOON';
+  const statusColorClassName = isClosingSoon
+    ? 'bg-bg-accent-red-weak text-fg-accent-info-red'
+    : match.canApply
+      ? 'bg-bg-accent-blue-weak text-fg-accent-info-blue'
+      : 'bg-bg-neutral-weak text-fg-neutral-muted';
+
+  return (
+    <article className="flex items-center gap-4 bg-bg-neutral-transparent px-4 py-2">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <img
+          src={match.stadiumImageUrl}
+          alt={`${match.stadiumName} 전경`}
+          width={74}
+          height={74}
+          loading="lazy"
+          decoding="async"
+          className="size-[74px] shrink-0 rounded-small object-cover"
+        />
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <div className="flex items-center gap-1">
+            <time
+              dateTime={match.startTime}
+              className={`${isClosingSoon ? 'text-fg-accent-info-red' : 'text-fg-accent-info-blue'} typo-body-large-sb`}
+            >
+              {formatMatchTime(match.startTime)}
+            </time>
+            {match.status !== 'OPEN' && (
+              <span
+                className={`inline-flex h-[17px] shrink-0 items-center justify-center rounded-full px-2 typo-label-small-sb ${statusColorClassName}`}
+              >
+                {isClosingSoon && match.remainingSlots > 0
+                  ? `${match.remainingSlots}자리남음`
+                  : MATCH_STATUS_LABELS[match.status]}
+              </span>
+            )}
+            {match.hasAiReport && (
+              <span className="inline-flex h-[17px] shrink-0 items-center justify-center rounded-full bg-bg-accent-blue-weak px-2 text-fg-accent-info-blue typo-label-small-sb">
+                AI 리포트
+              </span>
+            )}
+          </div>
+          <h3
+            className="truncate text-fg-neutral-default typo-body-large-sb"
+            title={match.stadiumName}
+          >
+            {match.stadiumName}
+          </h3>
+          <div className="flex flex-wrap items-start gap-x-2 gap-y-1 whitespace-nowrap">
+            <span className="text-fg-neutral-muted typo-body-medium-sb">
+              {MATCH_TYPE_LABELS[match.matchType]}
+            </span>
+            {match.genderType !== 'MIXED' && (
+              <span className="text-fg-neutral-subtle typo-body-medium-md">
+                {GENDER_LABELS[match.genderType]}
+              </span>
+            )}
+            <span className="text-fg-neutral-subtle typo-body-medium-md">
+              {LEVEL_LABELS[match.levelType]}
+            </span>
+            {match.hasParking && (
+              <span className="text-fg-neutral-subtle typo-body-medium-md">
+                주차 {match.parkingCapacity}자리 남음
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="flex w-9 shrink-0 flex-col items-center justify-center">
+        <FavoriteButton
+          selected={match.isFavorite}
+          onClick={() => setFavorite(!match.isFavorite)}
+          disabled={isPending}
+          aria-busy={isPending}
+          aria-label={`${match.stadiumName} 즐겨찾기`}
+          className="h-9"
+        />
+        <span className="w-full text-center text-fg-neutral-subtle typo-body-small-md">
+          <span className="sr-only">즐겨찾기 </span>
+          {match.favoriteCount}
+        </span>
+      </div>
+    </article>
+  );
+}
+
+export default MatchCard;
