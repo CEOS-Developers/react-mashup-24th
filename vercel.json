@@ -1,0 +1,9 @@
+{
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "${VITE_API_BASE_URL}/api/$1",
+      "env": ["VITE_API_BASE_URL"]
+    }
+  ]
+}
