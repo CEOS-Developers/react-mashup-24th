@@ -64,3 +64,8 @@ export function toMatchFilters(filter: FilterState) {
     earlybird: filter.earlybird || undefined,
   };
 }
+export function getDefaultPresetName(names: string[]) {
+  let number = 1;
+  while (names.includes(`내 필터(${number})`)) number += 1;
+  return `내 필터(${number})`;
+}

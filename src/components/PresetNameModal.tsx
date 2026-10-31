@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import ActionButton from './ActionButton';
 import Modal from './Modal';
+import { getDefaultPresetName } from '../utils/filter';
 
 type PresetNameModalProps = {
   open: boolean;
@@ -22,8 +23,8 @@ function PresetNameModal({ open, onClose, existingNames, onSubmit }: PresetNameM
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!trimmedName || error) return;
-    onSubmit(trimmedName);
+    if (error) return;
+    onSubmit(trimmedName || getDefaultPresetName(existingNames));
     setName('');
   };
 
@@ -33,7 +34,7 @@ function PresetNameModal({ open, onClose, existingNames, onSubmit }: PresetNameM
         <input
           value={name}
           onChange={(event) => setName(event.target.value)}
-          maxLength={12}
+          maxLength={10}
           placeholder="새 프리셋의 이름을 입력해주세요."
           aria-invalid={Boolean(error)}
           className={`h-11 w-full rounded-small border px-3 typo-body-medium-md outline-none ${error ? 'border-border-error' : 'border-border-default focus:border-border-focus'}`}
@@ -43,7 +44,7 @@ function PresetNameModal({ open, onClose, existingNames, onSubmit }: PresetNameM
           <ActionButton variant="secondary" onClick={handleClose}>
             취소
           </ActionButton>
-          <ActionButton type="submit" disabled={!trimmedName || Boolean(error)}>
+          <ActionButton type="submit" disabled={Boolean(error)}>
             확인
           </ActionButton>
         </div>
