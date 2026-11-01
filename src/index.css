@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@import "./styles/primitive.css";
+@import "./styles/semantic/measurement.css";
+@import "./styles/semantic/colors/action.css";
+@import "./styles/semantic/colors/border.css";
+@import "./styles/semantic/colors/icon.css";
+@import "./styles/semantic/colors/surface.css";
+@import "./styles/semantic/colors/text.css";
+@import "./styles/semantic/appearance.css";
+@import "./styles/semantic/typography.css";
+
+@keyframes recipient-sheet-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
