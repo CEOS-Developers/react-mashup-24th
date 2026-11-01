@@ -1,159 +1,296 @@
-# 4주차 과제: React - Mashup
+# ModooDoc - Frontend
 
-<br>
+> CEOS 24th MashUp Day Team 5 모두닥 역기획 프로젝트
 
-# 서론
+모두닥의 대학생 할인몰을 대상으로 기획과 사용자 흐름을 분석하고, 병원 탐색 과정의 개선점을 도출해 홈과 병원 검색 결과, 병원 및 시술 상세 기능을 구현한 역기획 프로젝트입니다.
 
-안녕하세요 🙌🏻 24기 프론트엔드 운영진 **권오진**입니다.
+진료과와 시술, 지역, 가격, 진료조건을 조합해 병원을 탐색하고 시술 정보와 후기를 확인하는 흐름을 구현했습니다. 화면 이동 시 선택한 검색 조건을 유지하고, 상세 조회 후에는 기존 정렬과 누적 목록, 스크롤 위치를 복원해 탐색을 이어갈 수 있도록 개선했습니다.
 
-다들 지난 3주 동안 미션을 진행하시느라 정말 수고 많으셨습니다. 지금까지 미션을 통해 **Vanilla JS**로 직접 서비스를 구현하며 느낀 불편함을 바탕으로, **React로 전환**하였습니다. 컴포넌트 기반의 개발 방식과 React Hooks 및 Zustand를 활용한 상태 관리, API 연동을 통해 클라이언트와 서버가 요청·응답을 주고 받는 과정과 데이터 처리 방식에 대해 경험해보셨을 거라 생각합니다.
+## 프로젝트 링크
 
-이번 미션은 지금까지 학습한 내용을 종합하여, 전체 세션에서 팀별로 진행하고 있는 **Mashup 구현**을 진행합니다
+[![서비스 배포 사이트](https://img.shields.io/badge/서비스_바로가기-5307B0?style=for-the-badge&logo=vercel&logoColor=white)](https://mashup-modoodoc.vercel.app/)
+[![개발 Preview](https://img.shields.io/badge/개발_Preview-7E4FDB?style=for-the-badge&logo=vercel&logoColor=white)](https://mashup-modoodoc-preview.vercel.app/)
+[![Figma](https://img.shields.io/badge/Figma_디자인-F24E1E?style=for-the-badge&logo=figma&logoColor=white)](https://www.figma.com/design/6GY3B88eBTNbwMxTkmIjAM/Mashup-Day-T5-%EB%AA%A8%EB%91%90%EB%8B%A5?node-id=2495-12092)
+[![Swagger API 문서](https://img.shields.io/badge/Swagger_API-2D7F47?style=for-the-badge&logo=swagger&logoColor=white)](https://modoodock.shop/swagger-ui/index.html#/)
 
-프로젝트의 규모가 커질수록 컴포넌트 수가 많아지고, 컴포넌트 간의 전달되는 props와 API에서 주고받는 데이터 구조 역시 복잡해집니다. 이때 **TypeScript를 활용하면** props, 상태, API 요청·응답 데이터 등의 타입을 명확하게 정의할 수 있어 코드 의도를 쉽게 파악할 수 있습니다. 또한 개발 과정에서 잘못된 타입 사용으로 발생할 수 있는 오류를 미리 발견할 수 있으며, 자동 완성과 안전한 리팩터링 등의 도움을 받을 수 있어 **프로젝트 규모가 커질수록 코드의 안정성과 유지보수성을 높이는 데 큰 도움이 됩니다.** 이번 미션에서는 실제 프로젝트에서 TypeScript를 어떻게 활용할 수 있을지도 함께 고민해보시면 좋겠습니다.
+배포 사이트는 `main`, 개발 Preview는 `develop` 브랜치를 기준으로 배포합니다.
 
-아울러 이번 미션은 **중간고사 휴회 기간을 포함하여 긴 기간 동안 진행되는 팀 단위 미션**입니다. 개인 과제와 달리 한 사람의 일정이 팀 전체의 개발 일정에도 영향을 줄 수 있으니 중간고사 준비 및 개인 일정을 고려하여 **팀원들과 작업 범위와 일정을 공유하고 조율해주세요.** 적지 않은 시간이 주어진 만큼 서로의 진행 상황을 꾸준히 공유하고, 필요한 부분에 대해 함께 의견을 나누며 완성해보시길 바랍니다.
+<br />
 
-과제를 진행하다가 막히는 부분이 있더라도, 우선은 스스로 공부하고 찾아보며 해결해보는 과정을 권장드립니다. 다만 미션과 관련해 운영진의 도움이 필요하다면, 언제든 프론트엔드 카카오톡 및 팀별 멘토에게 질문을 남겨주세요!
+## 주요 기능
 
-<br>
+### 대학생 할인몰 홈
 
-# 과제
+- 진료과와 시술 카테고리 선택 및 카테고리 전체 조회
+- 개별 시술 복수 선택에 따른 병원 목록 조회
+- 병원 목록 정렬과 더보기
+- 선택한 진료 범위와 시술을 유지한 검색 결과 이동
 
-## 🎯 목표
+### 병원 검색 결과
 
-- 협업을 통해 **효율적인 역할 분담**을 고민하고 적용합니다.
-- API 문서를 바탕으로 백엔드와 소통하는 방법을 학습합니다.
-- Tailwind CSS로 스타일링하여 **일관된 디자인 시스템**을 구축합니다.
-- React Router를 사용해 **페이지 간 라우팅을 구현**하고, 동적 경로와 URL 파라미터를 이해합니다.
-- TypeScript를 적극적으로 활용하여 **코드의 타입 안정성**을 확보합니다.
+- 시술 복수 선택과 지역, 가격, 진료조건을 조합한 병원 검색
+- 필터 시트의 임시 조건에 따른 결과 수 확인 및 적용
+- 방문 많은 순, 평점 높은 순, 리뷰 많은 순 정렬 및 시술 선택 시 낮은 가격순 정렬
+- 병원 목록 더보기와 상세 화면 이동
 
-## 📅 기한
+### 병원 및 시술 상세
 
-- **2026년 11월 1일 일요일 14:00까지**
+- 병원 기본 정보와 시술 정보 표시
+- 관련 후기와 다른 후기 구분
+- 후기 정렬과 더보기
+- 후기 키워드 표시
 
-## 💬 Review Questions
+### 공통 기능
 
-- 전반적인 협업 과정에 대해 알려주세요 ✏️
-- 팀에서 중요하게 논의했던 내용과 실제로 적용한 방식을 중심으로 작성해 주세요.
-- 협업에 대한 이전 기수(messenger, netflix, vote) PR 및 아래 가이드를 참고하시면 좋습니다!
+- 홈과 검색 결과의 선택값을 URL로 관리
+- 상세 화면에서 복귀할 때 선택 조건, 정렬, 누적 목록과 스크롤 위치 복원
+- 병원 북마크 선택 및 해제, 화면 간 상태 공유와 새로고침 후 유지
+- API 요청의 로딩, 실패, 빈 결과 구분 및 재시도
+- 구현 범위 밖 기능의 진입 버튼에 공통 안내 표시
+- 시술별 정상가와 대학생 할인가 표시, 할인가가 없는 시술의 정상가 단일 표시
+
+<br />
+
+## 기술 스택
+
+| 구분           | 기술                       |
+| -------------- | -------------------------- |
+| UI 및 언어     | React, TypeScript          |
+| 개발 및 빌드   | Vite                       |
+| 라우팅         | React Router               |
+| 스타일링       | Tailwind CSS               |
+| 코드 품질      | ESLint, Prettier           |
+| 패키지 관리    | npm                        |
+| 배포           | Vercel                     |
+| 협업 및 디자인 | Git, GitHub, Notion, Figma |
+
+<br />
+
+## 파일 구조
+
+화면, UI 컴포넌트, 상태와 조회 로직, 데이터 변환을 역할별로 나눴습니다. 페이지는 이 모듈들을 조합해 사용자 흐름을 연결합니다.
+
+```text
+src/
+├─ pages/          # 홈, 검색 결과, 병원 상세 페이지
+├─ routes/         # 라우팅과 홈 및 검색 결과의 공통 진료 선택지 조회
+├─ components/
+│  ├─ common/      # 칩, 배지, 탭, 슬라이더, 선택 시트, 토스트
+│  ├─ layout/      # 앱 레이아웃, 헤더, 하단 내비게이션
+│  ├─ mall/        # 할인몰 배너와 홈 병원 목록
+│  └─ hospital/    # 병원 및 가격 카드, 통합 필터, 상세 및 후기 UI
+├─ hooks/          # API 조회 상태, 목록 복원, 북마크, 시트 동작
+├─ api/            # 공통 요청 함수와 API별 조회 함수
+├─ types/          # API 요청 및 응답, 화면 데이터 타입
+├─ utils/          # URL 처리, 조회 조건 생성, 응답 변환, 스크롤 저장
+├─ constants/      # 정렬과 필터 선택지, 기본값, 병원 이미지 매핑
+├─ styles/         # 디자인 토큰과 타이포그래피
+└─ assets/         # 아이콘, 배너, 병원 이미지
 ```
-패키지 매니저 선택
-- npm, yarn, pnpm 중 무엇을 사용했는지
-- 해당 패키지 매니저를 선택한 이유
-- 팀 내에서 버전이나 lock 파일을 어떻게 관리했는지
 
-API 통신 방식
-- fetch, axios, ky 등 어떤 방식을 사용했는지
-- 해당 방식을 선택한 이유
-- API 요청 코드를 컴포넌트 내부 혹은 별도의 api, service로 분리했는지
+## 구현 방식
 
-서버 데이터 관리 방식
-- 단순 useEffect + useState를 사용했는지
-- TanStack Query 같은 서버 상태 관리 라이브러리를 도입했는지
-- 도입했다면 캐싱, 로딩 상태, 에러 처리 등을 어떻게 관리했는지
+### UI 구현
 
-상태 관리 기준
-- 어떤 상태를 컴포넌트 내부 상태로 관리했는지
-- 어떤 상태를 Zustand와 같은 전역 상태로 관리했는지
-- 서버 상태와 클라이언트 상태를 어떻게 구분했는지
+- Figma의 색상, 간격과 글자 스타일을 디자인 토큰으로 정의하고 Tailwind CSS에서 공통으로 사용했습니다.
+- 칩, 배지, 탭, 가격 카드를 공통 컴포넌트로 분리하고, 선택 상태와 표시 유형을 props로 전달해 화면 간 일관성을 유지했습니다.
+- 모바일 화면(375px)을 기준으로 구성하고, 넓은 화면에서는 콘텐츠 너비를 최대 480px로 제한했습니다.
+- 선택 시트의 열기와 닫기, 배경 스크롤 잠금, 키보드 포커스 제어를 공통 훅으로 분리했습니다.
+- 병원 이미지는 정적 파일로 관리하고, `hospitalId`별 공통 매핑으로 목록 썸네일과 상세 배너를 연결했습니다.
 
-라우팅 구조
-- React Router 등의 라우팅 라이브러리를 어떻게 구성했는지
-- 페이지별 Route 구조를 어떤 기준으로 나눴는지
-- 인증 여부에 따른 라우팅이 있다면 어떻게 처리했는지
+### 상태관리
 
-폴더 / 파일 구조
-- components, pages, hooks, api, store, types 등을 어떤 기준으로 나눴는지
-- 기능 중심(feature-based)인지 역할 중심인지
-- 파일 및 컴포넌트 naming convention은 어떻게 정했는지
-- 공통 컴포넌트 및 공통 UI(Button, Input, Modal 등)를 어떻게 구분했는지
-- 페이지 전용 컴포넌트와 재사용 컴포넌트를 어떻게 구분했는지
+React의 상태와 Context, React Router를 사용하고, 상태의 사용 범위와 유지 기간에 따라 저장 위치를 나눴습니다.
 
-환경변수 관리
-- API Base URL 등을 .env로 어떻게 관리했는지
-- 개발/배포 환경에 따라 설정을 어떻게 구분했는지
-- 에러 / 로딩 처리를 어떻게 처리했는지
-- API 요청 중 Loading UI를 어떻게 처리했는지
-- 요청 실패 시 사용자에게 어떤 방식으로 안내했는지
-- 예외 처리를 어느 위치에서 담당하도록 했는지
+| 상태                             | 관리 방식                         | 목적                                   |
+| -------------------------------- | --------------------------------- | -------------------------------------- |
+| 진료 범위, 시술과 필터 조건      | URL 쿼리                          | 화면 간 조건 전달과 새로고침 시 복원   |
+| 시트 열림, 적용 전 필터, 후기 탭 | 컴포넌트 상태                     | 해당 화면에서 사용하는 임시 상태 관리  |
+| 정렬, 누적 목록, 페이지와 스크롤 | 전용 훅과 방문 기록별 메모리 저장 | 상세 왕복과 뒤로가기 시 탐색 상태 복원 |
+| 병원 북마크                      | Context와 localStorage            | 화면 간 상태 공유와 새로고침 후 유지   |
 
-Git / GitHub 협업 방식
-- branch 전략
-- commit convention
-- PR 작성 방식
-- merge 방식
-- Issue를 활용했다면 Issue 관리 방식
+필터 시트의 임시 선택값은 ‘병원보기’를 눌렀을 때만 URL과 목록에 적용합니다. 적용하지 않고 닫으면 기존 검색 조건을 유지합니다.
 
-팀 내 역할 분담과 작업 공유
-- 페이지 기준으로 나눴는지, 기능 기준으로 나눴는지
-- 공통 컴포넌트 작업은 누가 담당했는지
-- 작업 충돌을 어떻게 방지했는지
-- 진행 상황을 어떤 방식으로 공유했는지
+새로고침하면 메모리에 저장한 목록과 스크롤은 초기화되며, URL의 검색 조건과 북마크는 유지됩니다.
+
+진료 선택지는 공통 상위 Route의 Outlet Context로 공유하고, 공통 안내 토스트는 Context를 통해 각 화면에서 호출합니다.
+
+### API 연동
+
+진료와 지역 선택부터 병원 검색, 시술 상세 정보와 후기 확인까지 서버 데이터를 연결했습니다.
+
+아래 표의 `{detailPath}`는 `/api/hospitals/{hospitalId}/treatments/{treatmentId}`를 의미합니다.
+
+| 구분              | API                                | 화면에서의 활용                           |
+| ----------------- | ---------------------------------- | ----------------------------------------- |
+| 진료 선택지       | `GET /api/categories`              | 진료과, 시술 카테고리와 세부 시술 선택    |
+| 지역 선택지       | `GET /api/regions`                 | 시도와 하위 지역 필터 구성                |
+| 병원 목록         | `GET /api/hospitals`               | 선택 조건에 맞는 병원과 시술 가격 표시    |
+| 필터 결과 수      | `GET /api/hospitals/count`         | 필터 적용 전 병원 수 확인                 |
+| 병원 및 시술 상세 | `GET {detailPath}`                 | 선택한 병원과 시술 정보 표시              |
+| 후기 목록         | `GET {detailPath}/reviews`         | 관련 후기와 다른 후기 조회, 정렬과 더보기 |
+| 후기 키워드       | `GET {detailPath}/review-keywords` | 후기 요약 키워드 표시                     |
+
+- 공통 함수 `apiGet`에서 요청 주소, 쿼리 생성, 공통 응답 형식과 오류 처리를 담당하고, API별 요청 함수와 타입을 분리했습니다.
+- 조회 훅에서 로딩, 성공, 실패와 재시도를 관리하고, 응답 데이터를 화면에 필요한 형태로 변환합니다.
+- 병원 목록과 필터 결과 수는 같은 조건 변환 함수를 사용해 조회 기준을 일치시켰습니다. 정렬과 페이지 조건은 목록 조회에만 추가합니다.
+- 병원 목록과 후기는 페이지 단위로 조회하고, 응답의 `hasNext`를 기준으로 더보기를 처리합니다.
+- 필터 결과 수 조회에는 디바운스를 적용하고, 조건 변경이나 시트 닫기 시 요청을 취소합니다. 이전 응답이 최신 결과를 덮어쓰지 않도록 처리하고, 로딩과 실패를 실제 0건과 구분합니다.
+
+<br />
+
+## Members
+
+| Member                                                    | Contribution                                                                                                                                                                                                                                        |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [**홍진우 (@j2nooh)**](https://github.com/j2nooh)         | 라우팅 및 디자인 토큰 구성, 병원 검색 결과 및 통합 필터 구현, 공통 컴포넌트 및 API 요청 구조 구현, 진료 및 지역 선택지와 병원 목록 및 결과 수 API 연동, 화면 간 선택값 전달과 목록 및 스크롤 복원, 북마크 및 공통 안내 구현, 이미지 매핑 적용, 배포 |
+| [**배승윤 (@llets9obae)**](https://github.com/llets9obae) | 프로젝트 초기 설정, 할인몰 홈과 병원 상세 및 후기 화면 구현, 공통 컴포넌트 구현, 후기 조회와 정렬 및 더보기 구현, 시술별 상세 화면 이동 연결, 병원 및 시술 상세 정보와 후기 목록 및 키워드 API 연동                                                 |
+
+<br />
+
+## 환경변수 설정
+
+프로젝트 루트에 `.env.example`을 복사해 `.env`를 만듭니다.
+
+```bash
+cp .env.example .env
 ```
-참고) [README 파일 작성 완벽 가이드](https://javaexpert.tistory.com/1511)
 
-## 💡 필수 요건
-### Mashup FE 과제 요건
-- 역기획한 요구사항을 충족해야 합니다.
-- 백엔드와 합의된 응답형식으로 실제 API가 연동되어 정상적으로 동작해야 합니다.
-- 로딩 / 빈 화면 / 에러 상태를 처리해야 합니다.
-- 사용자 입력값 검증과 에러 메시지를 구현해야 합니다.
-- 인증 및 권한에 따라 올바른 UI가 제공되어야 합니다.
-- 중복 요청이 발생하지 않도록 처리해야 합니다.
-- 주요 화면 크기에서 레이아웃이 깨지지 않아야 합니다.
-- 구현한 코드는 PR 리뷰 후 기본 브랜치에 병합되어야 합니다.
+```dotenv
+VITE_API_BASE_URL=https://modoodock.shop
+```
 
-### 📝 README 작성
-- 구현한 프로젝트의 내용을 정리하여 **`README.md` 파일**을 작성합니다.
-- 실제 프로젝트에서 사용하는 README를 작성한다는 생각으로 프로젝트의 주요 내용을 정리해주세요.
-#### README 작성 관련 자료
-- [README 작성 템플릿](https://wikidocs.net/367646)
-- [README.md 작성하기 - 마크 다운 문법](https://backendcode.tistory.com/165)
+기본 주소에는 `/api`를 붙이지 않습니다. 환경변수를 변경하면 개발 서버를 다시 실행합니다. 실제 `.env` 파일은 커밋하지 않습니다.
+API 요청은 백엔드의 CORS 허용 출처에서만 동작합니다.
 
+<br />
 
-### 🚨주의사항🚨
-- 5주차 세션 때 팀 별 Mashup 과제를 **모든 팀이 발표할** 예정입니다.
-- 과제 PR 작성 및 제출 팀원과 과제 발표 팀원을 **다르게 해주세요**‼️
+## 로컬 실행
 
-### ⚠️과제 제출⚠️
-- 제출 기한까지 필수 구현 사항이 전부 적용된 최종 결과물을 제출해주세요.
-- 과제 제출은 `git remote` 를 활용해서 제출해주세요.
-  - [Git의 기초 - 리모트 저장소](https://git-scm.com/book/ko/v2/Git%EC%9D%98-%EA%B8%B0%EC%B4%88-%EB%A6%AC%EB%AA%A8%ED%8A%B8-%EC%A0%80%EC%9E%A5%EC%86%8C)
-  - [깃헙 - 원격 저장소 연동 정리 (git remote / push / pull)](https://inpa.tistory.com/entry/GIT-%E2%9A%A1%EF%B8%8F-%EA%B9%83%ED%97%99-%EC%9B%90%EA%B2%A9-%EC%A0%80%EC%9E%A5%EC%86%8C-%EA%B4%80%EB%A6%AC-git-remote#2._git_remote_remote_repository_%EC%97%B0%EA%B2%B0)
-  - [원격 저장소 연결 (git remote)](https://wikidocs.net/332832)
+```bash
+npm ci
+npm run dev
+```
 
-# 링크 및 참고자료
+실행 후 터미널에 표시되는 Local 주소로 접속합니다.
 
-## React & TypeScript
+<br />
 
-- [빠르게 시작하기 - React](https://ko.react.dev/learn)
-- [리액트의 Hooks 완벽 정복하기](https://velog.io/@velopert/react-hooks#1-usestate)
-- [useEffect 가이드](https://overreacted.io/a-complete-guide-to-useeffect/)
-- [타입스크립트 핸드북](https://joshua1988.github.io/ts/intro.html)
+## 커밋 전 검증
 
-## Design
+```bash
+npm run lint
+npm run format:check
+npm run build
+```
 
-- [디자인 시스템 구축기](https://yozm.wishket.com/magazine/detail/1830/)
-- [(영상)디자인 시스템, 형태를 넘어서](https://www.youtube.com/watch?v=21eiJc90ggo)
-- [Tailwind CSS 핵심 패턴](https://www.heropy.dev/p/E67ZHS)
+<br />
 
-## Social Login
+## Workflow
 
-- [카카오 로그인 > 이해하기 - 카카오디벨로퍼](https://developers.kakao.com/docs/ko/kakaologin/common)
-- [[ React ] 정말 쉽다! 카카오 소셜 로그인 프론트에서 이해하고 구현하기](https://velog.io/@pakxe/React-%EC%A0%95%EB%A7%90-%EC%89%BD%EB%8B%A4-%EC%B9%B4%EC%B9%B4%EC%98%A4-%EC%86%8C%EC%85%9C-%EB%A1%9C%EA%B7%B8%EC%9D%B8-%ED%94%84%EB%A1%A0%ED%8A%B8%EC%97%90%EC%84%9C-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B3%A0-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0)
-- [[React] 구글 로그인 구현하기](https://velog.io/@39busy/React-Social-Login)
+```text
+Issue 생성
+→ develop에서 작업 브랜치 생성
+→ 작업 및 커밋
+→ lint, format, build 검증
+→ PR 생성
+→ 리뷰 및 수정
+→ develop 병합
+→ Preview 배포에서 동작 확인
+→ 작업 브랜치 삭제
 
-## 배포
+배포 또는 최종 제출 시
+develop의 Preview 배포에서 주요 동작 확인
+→ develop → main 대상 PR 생성
+→ 검토 및 병합
+→ Production 배포 확인
+```
 
-- [프론트엔드 배포 완전 정리 — 웹부터 앱까지](https://velog.io/@mountainstar/%ED%94%84%EB%A1%A0%ED%8A%B8%EC%97%94%EB%93%9C-%EB%B0%B0%ED%8F%AC-%EC%99%84%EC%A0%84-%EC%A0%95%EB%A6%AC-%EC%9B%B9%EB%B6%80%ED%84%B0-%EC%95%B1%EA%B9%8C%EC%A7%80)
-- [우리는 Vercel로 간다! 프론트엔드 배포 가이드](https://www.yolog.co.kr/post/vercel-deployment/)
-- [.env 파일이란? + 생성하기](https://hongssup.tistory.com/entry/%EB%A7%A4%ED%81%AC%EB%A1%9C)
+- 일반 작업 PR의 대상 브랜치는 `develop`입니다.
+- `develop`은 통합 개발 및 Preview 검증용이며, `main`은 Production 배포용입니다.
+- `main`에는 주요 동작을 검증한 배포 또는 최종 제출 가능한 버전만 병합합니다.
 
-## 성능 측정 및 최적화
+<br />
 
-- [Lighthouse 소개](https://developer.chrome.com/docs/lighthouse/overview?hl=ko)
-- [Lighthouse로 웹 성능 측정하고 개선하기](https://velog.io/@khy226/Lighthouse%EB%A1%9C-%EC%9B%B9-%EC%84%B1%EB%8A%A5-%EC%B8%A1%EC%A0%95%ED%95%98%EA%B3%A0-%EA%B0%9C%EC%84%A0%ED%95%98%EA%B8%B0)
-- [React 성능 최적화 완벽 가이드: Vercel의 45가지 실전 기법](https://velog.io/@jihyeong00/React-%EC%84%B1%EB%8A%A5-%EC%B5%9C%EC%A0%81%ED%99%94-%EC%99%84%EB%B2%BD-%EA%B0%80%EC%9D%B4%EB%93%9C-Vercel%EC%9D%98-45%EA%B0%80%EC%A7%80-%EC%8B%A4%EC%A0%84-%EA%B8%B0%EB%B2%95)
-- [Speed Insights Overview](https://vercel.com/docs/speed-insights)
-- [Improved Speed Insights experience](https://vercel.com/changelog/improved-speed-insights-experience)
+## 협업 규칙
+
+### Issue 규칙
+
+Issue 제목은 아래 형식을 따릅니다.
+
+```text
+[TYPE] 작업 내용
+```
+
+예: `[FEAT] 로그인 화면 구현`
+
+`[FEAT]`, `[FIX]`, `[REFACTOR]`, `[DOCS]`, `[CHORE]`, `[TEST]` 중 작업 성격에 맞는 Type을 사용합니다.
+
+- 기능 개발은 Feature 템플릿, 버그 수정은 Bug 템플릿을 사용합니다.
+- 작업 범위와 완료 조건을 작성하고, 관련 Figma, 기획 문서, API 명세 링크를 첨부합니다.
+- Issue 생성 후 담당자를 지정하고 작업을 시작합니다.
+
+### Branch 규칙
+
+브랜치는 아래 형식을 따릅니다.
+
+```text
+type/이슈번호-작업내용
+```
+
+| Type       | 의미                       | 예시                        |
+| ---------- | -------------------------- | --------------------------- |
+| `feat`     | 새로운 기능 개발           | `feat/1-signup`             |
+| `fix`      | 버그 수정                  | `fix/2-login-error`         |
+| `docs`     | 문서 수정                  | `docs/3-readme`             |
+| `refactor` | 코드 리팩토링              | `refactor/4-member-service` |
+| `chore`    | 설정, 빌드, 기타 작업      | `chore/5-github-template`   |
+| `test`     | 테스트 코드 작성 또는 수정 | `test/6-member-service`     |
+
+작업 내용은 소문자와 하이픈(`-`)을 사용해 작성합니다.
+
+별도 Issue 없이 진행하기로 합의한 작업은 `type/작업내용` 형식을 사용합니다.
+예: `refactor/search-filter-sheets`
+
+### Commit 규칙
+
+커밋 메시지는 아래 형식을 따릅니다.
+
+```text
+type: 작업 내용
+```
+
+예: `feat: 로그인 화면 구현`
+
+| Type       | 의미                               |
+| ---------- | ---------------------------------- |
+| `feat`     | 새로운 기능 추가                   |
+| `fix`      | 버그 수정                          |
+| `docs`     | 문서 수정                          |
+| `style`    | 코드 포맷팅 등 기능 변화 없는 수정 |
+| `refactor` | 코드 리팩토링                      |
+| `test`     | 테스트 코드 추가 또는 수정         |
+| `chore`    | 빌드, 패키지, 설정 등 기타 작업    |
+| `rename`   | 파일 또는 폴더명 변경              |
+| `remove`   | 파일 또는 폴더 삭제                |
+
+커밋은 하나의 목적을 갖도록 작게 나눕니다.
+
+```text
+feat: 로그인 페이지 구현
+fix: 검색 결과 빈 상태 처리
+```
+
+### PR 규칙
+
+PR 제목은 Issue와 같은 형식을 사용합니다.
+
+```text
+[TYPE] 작업 내용
+```
+
+- 일반 작업 PR은 `develop` 브랜치를 대상으로 생성합니다.
+- 관련 Issue가 있으면 PR 본문에 `Closes #이슈번호`를 작성해 연결합니다.
+- 주요 변경 사항, 실제 검증 결과, 리뷰어가 확인할 내용을 작성합니다.
+- UI 변경이 있다면 스크린샷 또는 화면 녹화를 첨부합니다.
+- 하나의 PR은 하나의 작업 목표를 다룹니다.
