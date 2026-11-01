@@ -1,159 +1,174 @@
-# 4주차 과제: React - Mashup
+# CEOS MashUp Team 02 Web
 
-<br>
+> 센트비(Sentbe)의 해외송금 과정에서 받는 방법을 쉽게 비교하고 선택할 수 있도록 송금 흐름을 개선한 프론트엔드 프로젝트입니다.
 
-# 서론
+사용자는 송금할 금액과 통화를 입력하고, 환율·도착 속도·수수료를 기준으로 받는 방법을 비교한 뒤 수취인 정보를 입력할 수 있습니다.
 
-안녕하세요 🙌🏻 24기 프론트엔드 운영진 **권오진**입니다.
+## 주요 기능
 
-다들 지난 3주 동안 미션을 진행하시느라 정말 수고 많으셨습니다. 지금까지 미션을 통해 **Vanilla JS**로 직접 서비스를 구현하며 느낀 불편함을 바탕으로, **React로 전환**하였습니다. 컴포넌트 기반의 개발 방식과 React Hooks 및 Zustand를 활용한 상태 관리, API 연동을 통해 클라이언트와 서버가 요청·응답을 주고 받는 과정과 데이터 처리 방식에 대해 경험해보셨을 거라 생각합니다.
+### 1. 송금 금액 및 통화 설정
 
-이번 미션은 지금까지 학습한 내용을 종합하여, 전체 세션에서 팀별로 진행하고 있는 **Mashup 구현**을 진행합니다
+- 국가·통화 선택 바텀시트를 통한 통화 설정
+- 환율 API를 활용한 예상 수취 금액 계산
+- 최근 송금 이력을 활용한 기본 통화 설정
+- 최소 송금액 5,000 KRW 검증
 
-프로젝트의 규모가 커질수록 컴포넌트 수가 많아지고, 컴포넌트 간의 전달되는 props와 API에서 주고받는 데이터 구조 역시 복잡해집니다. 이때 **TypeScript를 활용하면** props, 상태, API 요청·응답 데이터 등의 타입을 명확하게 정의할 수 있어 코드 의도를 쉽게 파악할 수 있습니다. 또한 개발 과정에서 잘못된 타입 사용으로 발생할 수 있는 오류를 미리 발견할 수 있으며, 자동 완성과 안전한 리팩터링 등의 도움을 받을 수 있어 **프로젝트 규모가 커질수록 코드의 안정성과 유지보수성을 높이는 데 큰 도움이 됩니다.** 이번 미션에서는 실제 프로젝트에서 TypeScript를 어떻게 활용할 수 있을지도 함께 고민해보시면 좋겠습니다.
+### 2. 받는 방법 비교 및 선택
 
-아울러 이번 미션은 **중간고사 휴회 기간을 포함하여 긴 기간 동안 진행되는 팀 단위 미션**입니다. 개인 과제와 달리 한 사람의 일정이 팀 전체의 개발 일정에도 영향을 줄 수 있으니 중간고사 준비 및 개인 일정을 고려하여 **팀원들과 작업 범위와 일정을 공유하고 조율해주세요.** 적지 않은 시간이 주어진 만큼 서로의 진행 상황을 꾸준히 공유하고, 필요한 부분에 대해 함께 의견을 나누며 완성해보시길 바랍니다.
+- **좋은 환율 · 빠른 도착 · 낮은 수수료** 탭에 따른 받는 방법 조회
+- 받는 방법별 수취 금액, 수수료 및 도착 정보 확인
+- 상세 모달에서 속도별 요금제 확인
+- 선택한 방법의 수취 금액과 수수료를 반영한 총 출금액 표시
+- 목록 스크롤 시 송금 금액 영역을 요약 형태로 전환
+- 금액 입력에 500ms 디바운스를 적용해 API 요청 제어
 
-과제를 진행하다가 막히는 부분이 있더라도, 우선은 스스로 공부하고 찾아보며 해결해보는 과정을 권장드립니다. 다만 미션과 관련해 운영진의 도움이 필요하다면, 언제든 프론트엔드 카카오톡 및 팀별 멘토에게 질문을 남겨주세요!
+### 3. 수취인 정보 입력 및 송금 요청
 
-<br>
+- 국적, 계좌은행, 계좌번호, 영문 이름, 연락처, 생년월일 입력
+- 수취 국가에 맞는 국가번호 표시
+- 필수 입력값 검증 및 베트남 국적 수취인의 중간이름 검증
+- 송금 생성 API 요청 및 중복 제출 방지
+- 처리 결과 모달 표시, 완료 확인 후 송금 상태 초기화 및 홈 이동
 
-# 과제
+### 4. 화면 간 송금 정보 유지
 
-## 🎯 목표
+- Zustand로 통화, 금액, 환율, 선택한 받는 방법 관리
+- `sessionStorage`를 통해 새로고침 후에도 송금 상태 유지
+- 필수 송금 정보 없이 다음 단계에 접근하면 홈으로 이동
 
-- 협업을 통해 **효율적인 역할 분담**을 고민하고 적용합니다.
-- API 문서를 바탕으로 백엔드와 소통하는 방법을 학습합니다.
-- Tailwind CSS로 스타일링하여 **일관된 디자인 시스템**을 구축합니다.
-- React Router를 사용해 **페이지 간 라우팅을 구현**하고, 동적 경로와 URL 파라미터를 이해합니다.
-- TypeScript를 적극적으로 활용하여 **코드의 타입 안정성**을 확보합니다.
+## 화면 흐름
 
-## 📅 기한
-
-- **2026년 11월 1일 일요일 14:00까지**
-
-## 💬 Review Questions
-
-- 전반적인 협업 과정에 대해 알려주세요 ✏️
-- 팀에서 중요하게 논의했던 내용과 실제로 적용한 방식을 중심으로 작성해 주세요.
-- 협업에 대한 이전 기수(messenger, netflix, vote) PR 및 아래 가이드를 참고하시면 좋습니다!
+```text
+홈 (/) → 받는 방법 비교 (/transfer) → 수취인 정보 입력 (/information)
+  ↑                                         │
+  └──────────── 완료 확인 후 홈으로 이동 ────────┘
 ```
-패키지 매니저 선택
-- npm, yarn, pnpm 중 무엇을 사용했는지
-- 해당 패키지 매니저를 선택한 이유
-- 팀 내에서 버전이나 lock 파일을 어떻게 관리했는지
 
-API 통신 방식
-- fetch, axios, ky 등 어떤 방식을 사용했는지
-- 해당 방식을 선택한 이유
-- API 요청 코드를 컴포넌트 내부 혹은 별도의 api, service로 분리했는지
+| 경로 | 화면 | 주요 역할 |
+| --- | --- | --- |
+| `/` | HomePage | 통화 선택, 송금 금액 입력, 예상 수취 금액 확인 |
+| `/transfer` | TransferPage | 받는 방법 비교, 상세 조회 및 선택 |
+| `/information` | InformationPage | 수취인 정보 입력, 검증 및 송금 생성 요청 |
 
-서버 데이터 관리 방식
-- 단순 useEffect + useState를 사용했는지
-- TanStack Query 같은 서버 상태 관리 라이브러리를 도입했는지
-- 도입했다면 캐싱, 로딩 상태, 에러 처리 등을 어떻게 관리했는지
+## 기술 스택
 
-상태 관리 기준
-- 어떤 상태를 컴포넌트 내부 상태로 관리했는지
-- 어떤 상태를 Zustand와 같은 전역 상태로 관리했는지
-- 서버 상태와 클라이언트 상태를 어떻게 구분했는지
+| 구분 | 사용 기술 |
+| --- | --- |
+| UI | React 19, TypeScript 6 |
+| 빌드 | Vite 8, React Compiler |
+| 스타일 | Tailwind CSS 4, CSS 디자인 토큰, Pretendard Variable |
+| 라우팅 | React Router 8 |
+| 상태 관리 | Zustand 5, sessionStorage |
+| HTTP 통신 | Axios |
+| 코드 품질 | ESLint, Prettier |
+| 배포 설정 | Vercel |
 
-라우팅 구조
-- React Router 등의 라우팅 라이브러리를 어떻게 구성했는지
-- 페이지별 Route 구조를 어떤 기준으로 나눴는지
-- 인증 여부에 따른 라우팅이 있다면 어떻게 처리했는지
+## 실행 방법
 
-폴더 / 파일 구조
-- components, pages, hooks, api, store, types 등을 어떤 기준으로 나눴는지
-- 기능 중심(feature-based)인지 역할 중심인지
-- 파일 및 컴포넌트 naming convention은 어떻게 정했는지
-- 공통 컴포넌트 및 공통 UI(Button, Input, Modal 등)를 어떻게 구분했는지
-- 페이지 전용 컴포넌트와 재사용 컴포넌트를 어떻게 구분했는지
+아래 명령은 `react-mashup-24th` 디렉터리를 기준으로 실행합니다.
 
-환경변수 관리
-- API Base URL 등을 .env로 어떻게 관리했는지
-- 개발/배포 환경에 따라 설정을 어떻게 구분했는지
-- 에러 / 로딩 처리를 어떻게 처리했는지
-- API 요청 중 Loading UI를 어떻게 처리했는지
-- 요청 실패 시 사용자에게 어떤 방식으로 안내했는지
-- 예외 처리를 어느 위치에서 담당하도록 했는지
+### 1. 의존성 설치
 
-Git / GitHub 협업 방식
-- branch 전략
-- commit convention
-- PR 작성 방식
-- merge 방식
-- Issue를 활용했다면 Issue 관리 방식
-
-팀 내 역할 분담과 작업 공유
-- 페이지 기준으로 나눴는지, 기능 기준으로 나눴는지
-- 공통 컴포넌트 작업은 누가 담당했는지
-- 작업 충돌을 어떻게 방지했는지
-- 진행 상황을 어떤 방식으로 공유했는지
+```bash
+npm ci
 ```
-참고) [README 파일 작성 완벽 가이드](https://javaexpert.tistory.com/1511)
 
-## 💡 필수 요건
-### Mashup FE 과제 요건
-- 역기획한 요구사항을 충족해야 합니다.
-- 백엔드와 합의된 응답형식으로 실제 API가 연동되어 정상적으로 동작해야 합니다.
-- 로딩 / 빈 화면 / 에러 상태를 처리해야 합니다.
-- 사용자 입력값 검증과 에러 메시지를 구현해야 합니다.
-- 인증 및 권한에 따라 올바른 UI가 제공되어야 합니다.
-- 중복 요청이 발생하지 않도록 처리해야 합니다.
-- 주요 화면 크기에서 레이아웃이 깨지지 않아야 합니다.
-- 구현한 코드는 PR 리뷰 후 기본 브랜치에 병합되어야 합니다.
+### 2. 환경 변수 설정
 
-### 📝 README 작성
-- 구현한 프로젝트의 내용을 정리하여 **`README.md` 파일**을 작성합니다.
-- 실제 프로젝트에서 사용하는 README를 작성한다는 생각으로 프로젝트의 주요 내용을 정리해주세요.
-#### README 작성 관련 자료
-- [README 작성 템플릿](https://wikidocs.net/367646)
-- [README.md 작성하기 - 마크 다운 문법](https://backendcode.tistory.com/165)
+프로젝트 루트에 `.env` 파일을 생성하고 백엔드 서버 주소를 설정합니다.
 
+```dotenv
+VITE_API_BASE_URL=http://43.201.63.60:8080
+```
 
-### 🚨주의사항🚨
-- 5주차 세션 때 팀 별 Mashup 과제를 **모든 팀이 발표할** 예정입니다.
-- 과제 PR 작성 및 제출 팀원과 과제 발표 팀원을 **다르게 해주세요**‼️
+현재 사용하는 백엔드 서버 주소는 `http://43.201.63.60:8080`입니다. 개발 서버는 `/api` 요청을 해당 주소로 전달하므로 환경 변수 값에는 `/api`를 붙이지 않습니다. 이 환경 변수는 로컬 개발용 Vite 프록시에서 사용하며, Vercel 배포 환경의 대상 주소는 `vercel.json`에서 별도로 설정합니다.
 
-### ⚠️과제 제출⚠️
-- 제출 기한까지 필수 구현 사항이 전부 적용된 최종 결과물을 제출해주세요.
-- 과제 제출은 `git remote` 를 활용해서 제출해주세요.
-  - [Git의 기초 - 리모트 저장소](https://git-scm.com/book/ko/v2/Git%EC%9D%98-%EA%B8%B0%EC%B4%88-%EB%A6%AC%EB%AA%A8%ED%8A%B8-%EC%A0%80%EC%9E%A5%EC%86%8C)
-  - [깃헙 - 원격 저장소 연동 정리 (git remote / push / pull)](https://inpa.tistory.com/entry/GIT-%E2%9A%A1%EF%B8%8F-%EA%B9%83%ED%97%99-%EC%9B%90%EA%B2%A9-%EC%A0%80%EC%9E%A5%EC%86%8C-%EA%B4%80%EB%A6%AC-git-remote#2._git_remote_remote_repository_%EC%97%B0%EA%B2%B0)
-  - [원격 저장소 연결 (git remote)](https://wikidocs.net/332832)
+### 3. 개발 서버 실행
 
-# 링크 및 참고자료
+```bash
+npm run dev
+```
 
-## React & TypeScript
+접속 주소: **http://localhost:3000**
 
-- [빠르게 시작하기 - React](https://ko.react.dev/learn)
-- [리액트의 Hooks 완벽 정복하기](https://velog.io/@velopert/react-hooks#1-usestate)
-- [useEffect 가이드](https://overreacted.io/a-complete-guide-to-useeffect/)
-- [타입스크립트 핸드북](https://joshua1988.github.io/ts/intro.html)
+개발 서버 포트는 `3000`으로 고정되어 있으며, 해당 포트가 사용 중이면 실행이 중단됩니다. 환율 조회와 받는 방법 비교 등 API 기반 기능을 사용하려면 백엔드 서버에 연결되어 있어야 합니다.
 
-## Design
+### 명령어
 
-- [디자인 시스템 구축기](https://yozm.wishket.com/magazine/detail/1830/)
-- [(영상)디자인 시스템, 형태를 넘어서](https://www.youtube.com/watch?v=21eiJc90ggo)
-- [Tailwind CSS 핵심 패턴](https://www.heropy.dev/p/E67ZHS)
+| 명령어 | 설명 |
+| --- | --- |
+| `npm run dev` | 개발 서버 실행 |
+| `npm run build` | TypeScript 빌드 검사 및 프로덕션 번들 생성 |
+| `npm run preview` | 빌드 결과 로컬 미리보기 |
+| `npm run lint` | ESLint 검사 |
 
-## Social Login
+## API 연동
 
-- [카카오 로그인 > 이해하기 - 카카오디벨로퍼](https://developers.kakao.com/docs/ko/kakaologin/common)
-- [[ React ] 정말 쉽다! 카카오 소셜 로그인 프론트에서 이해하고 구현하기](https://velog.io/@pakxe/React-%EC%A0%95%EB%A7%90-%EC%89%BD%EB%8B%A4-%EC%B9%B4%EC%B9%B4%EC%98%A4-%EC%86%8C%EC%85%9C-%EB%A1%9C%EA%B7%B8%EC%9D%B8-%ED%94%84%EB%A1%A0%ED%8A%B8%EC%97%90%EC%84%9C-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B3%A0-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0)
-- [[React] 구글 로그인 구현하기](https://velog.io/@39busy/React-Social-Login)
+Axios 공통 클라이언트의 기본 경로는 `/api`이며, 요청 제한 시간은 5초입니다. 공통 응답의 `isSuccess`를 확인하고 서버 오류를 `ApiError`로 처리합니다.
 
-## 배포
+| 메서드 | 경로 | 용도 |
+| --- | --- | --- |
+| GET | `/api/v1/exchange-rates` | 통화 간 환율 조회 |
+| GET | `/api/v1/receive-options` | 송금 조건 및 정렬 기준에 따른 받는 방법 조회 |
+| GET | `/api/v1/receive-options/details` | 받는 방법별 속도·요금제 상세 조회 |
+| GET | `/api/v1/remittances/latest` | 최근 송금 이력 조회 |
+| POST | `/api/v1/remittances` | 수취 통화와 송금액으로 송금 생성 |
 
-- [프론트엔드 배포 완전 정리 — 웹부터 앱까지](https://velog.io/@mountainstar/%ED%94%84%EB%A1%A0%ED%8A%B8%EC%97%94%EB%93%9C-%EB%B0%B0%ED%8F%AC-%EC%99%84%EC%A0%84-%EC%A0%95%EB%A6%AC-%EC%9B%B9%EB%B6%80%ED%84%B0-%EC%95%B1%EA%B9%8C%EC%A7%80)
-- [우리는 Vercel로 간다! 프론트엔드 배포 가이드](https://www.yolog.co.kr/post/vercel-deployment/)
-- [.env 파일이란? + 생성하기](https://hongssup.tistory.com/entry/%EB%A7%A4%ED%81%AC%EB%A1%9C)
+### HTTPS 배포 환경의 API 프록시
 
-## 성능 측정 및 최적화
+Vercel에 배포된 프론트엔드는 **HTTPS**, 현재 백엔드 서버는 **HTTP**(`http://43.201.63.60:8080`)를 사용합니다. 브라우저에서 HTTPS 페이지가 HTTP API를 직접 호출하면 혼합 콘텐츠(Mixed Content)로 차단될 수 있어, `vercel.json`에 API rewrite를 설정했습니다.
 
-- [Lighthouse 소개](https://developer.chrome.com/docs/lighthouse/overview?hl=ko)
-- [Lighthouse로 웹 성능 측정하고 개선하기](https://velog.io/@khy226/Lighthouse%EB%A1%9C-%EC%9B%B9-%EC%84%B1%EB%8A%A5-%EC%B8%A1%EC%A0%95%ED%95%98%EA%B3%A0-%EA%B0%9C%EC%84%A0%ED%95%98%EA%B8%B0)
-- [React 성능 최적화 완벽 가이드: Vercel의 45가지 실전 기법](https://velog.io/@jihyeong00/React-%EC%84%B1%EB%8A%A5-%EC%B5%9C%EC%A0%81%ED%99%94-%EC%99%84%EB%B2%BD-%EA%B0%80%EC%9D%B4%EB%93%9C-Vercel%EC%9D%98-45%EA%B0%80%EC%A7%80-%EC%8B%A4%EC%A0%84-%EA%B8%B0%EB%B2%95)
-- [Speed Insights Overview](https://vercel.com/docs/speed-insights)
-- [Improved Speed Insights experience](https://vercel.com/changelog/improved-speed-insights-experience)
+프론트엔드는 백엔드 주소를 직접 호출하는 대신 같은 출처의 `/api`로 요청합니다. 브라우저와 Vercel 사이에서는 HTTPS를 사용하고, Vercel이 서버 측에서 HTTP 백엔드로 요청을 전달합니다.
+
+```text
+브라우저 → HTTPS 배포 도메인/api/... → Vercel rewrite → http://43.201.63.60:8080/api/...
+```
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "http://43.201.63.60:8080/api/:path*"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
+
+API rewrite를 SPA fallback보다 먼저 배치해 `/api` 요청은 백엔드로 전달하고, 나머지 화면 경로는 `index.html`로 연결합니다. 이를 통해 `/transfer`, `/information` 경로에 직접 접근하거나 새로고침할 수 있습니다.
+
+로컬 개발 환경에서는 `vite.config.ts`의 프록시가 같은 역할로 `/api` 요청을 `VITE_API_BASE_URL`에 지정한 백엔드로 전달합니다.
+
+## 프로젝트 구조
+
+```text
+react-mashup-24th/
+├── public/                 # 파비콘 및 SVG 리소스
+├── src/
+│   ├── apis/               # Axios 클라이언트와 API 요청 함수
+│   ├── assets/             # 국가별 국기 이미지, 폰트
+│   ├── components/         # 공통 UI 및 송금 입력 컴포넌트
+│   │   ├── icons/          # 아이콘 컴포넌트
+│   │   ├── w1/             # 홈 화면 컴포넌트
+│   │   ├── w2/             # 받는 방법 비교 및 상세 컴포넌트
+│   │   └── w3/             # 수취인 입력 및 검증 컴포넌트
+│   ├── constants/          # 국가·통화 정보
+│   ├── hooks/              # API 조회 및 디바운스 훅
+│   ├── mocks/              # 화면 구성용 데이터
+│   ├── pages/              # HomePage, TransferPage, InformationPage
+│   ├── routes/             # 라우터 및 경로 상수
+│   ├── stores/             # 송금 정보 전역 상태
+│   ├── styles/             # Primitive·Semantic 디자인 토큰
+│   ├── types/              # API 및 도메인 타입
+│   └── utils/              # 금액 검증, 환율 계산, 옵션 정렬 등
+├── vite.config.ts          # 빌드 플러그인, 개발 서버 및 API 프록시
+└── vercel.json             # 배포 환경 API rewrite 및 SPA fallback
+```
+
+## 👥 Frontend Team
+
+| 이름 | 역할 |
+| --- | --- |
+| 안정규 | Frontend |
+| 최승하 | Frontend |

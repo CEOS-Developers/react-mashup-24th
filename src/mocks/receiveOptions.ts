@@ -1,0 +1,132 @@
+import type { ApiResponse } from "../types/api";
+import type {
+  ReceiveOption,
+  ReceiveOptionsResult,
+} from "../types/receiveOption";
+
+// 목데이터는 선택 가능한 옵션만 있습니다.
+type MockReceiveOptionsResult = Omit<ReceiveOptionsResult, "options"> & {
+  options: ReceiveOption[];
+};
+import { getMockRate } from "./exchangeRates";
+
+// 오늘로부터 days 일 뒤 날짜를 "YYYY-MM-DD" 로 만듭니다. (날짜가 지나도 항상 같은 간격으로 보이게)
+function daysFromToday(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+// 받는 방법 리스트 조회 API 응답 예시입니다.
+// 나중에 api 연동시 이 파일을 지우고, import 하는 곳을 API 응답으로 교체하면 됩니다.
+//
+// 탭별 정렬 확인용으로 값을 다르게 넣었습니다. (ATM카드는 추천이라 항상 맨 위)
+// 환율 마진은 모두 0 이라 받는 총액(totalAmount)은 1,000,000 × 19.03 으로 모두 같습니다.
+//  - 좋은 환율(rateMargin↑):  마진이 모두 같아서 API 순서 그대로
+//  - 빠른 도착(arrivalDate↑): ZaloPay > MoMo > 현금 수령 > 은행
+//  - 낮은 수수료(fixedFee↑):  현금 수령 > 은행 > MoMo > ZaloPay
+// 가장 경제적 뱃지(fixedFee 최저): 현금 수령
+export const MOCK_RECEIVE_OPTIONS_RESPONSE: ApiResponse<MockReceiveOptionsResult> =
+  {
+    isSuccess: true,
+    code: "RECEIVE-OPTION200_1",
+    message: "받는 방법 리스트 조회에 성공하였습니다.",
+    result: {
+      sendCurrency: "KRW",
+      receiveCurrency: "VND",
+      sendAmount: 1000000,
+      options: [
+        {
+          methodType: "CARD",
+          methodProvider: "ATM",
+          methodName: "ATM카드",
+          speedType: "EXPRESS",
+          fixedFee: 5000,
+          rateMargin: 0,
+          totalAmount: 19030000,
+          transferTime: "15분 ~ 1일",
+          arrivalDate: daysFromToday(0),
+          badges: ["RECOMMENDED"],
+        },
+        {
+          methodType: "BANK",
+          methodProvider: "NONE",
+          methodName: "은행",
+          speedType: "STANDARD",
+          fixedFee: 2500,
+          rateMargin: 0,
+          totalAmount: 19030000,
+          transferTime: "영업일 2~3일",
+          arrivalDate: daysFromToday(3),
+        },
+        {
+          methodType: "WALLET",
+          methodProvider: "MOMO",
+          methodName: "MoMo",
+          speedType: "EXPRESS",
+          fixedFee: 3500,
+          rateMargin: 0,
+          totalAmount: 19030000,
+          transferTime: "1시간 ~ 1일",
+          arrivalDate: daysFromToday(1),
+        },
+        {
+          methodType: "CASH",
+          methodProvider: "PICKUP",
+          methodName: "현금 수령",
+          speedType: "STANDARD",
+          fixedFee: 1500,
+          rateMargin: 0,
+          totalAmount: 19030000,
+          transferTime: "영업일 1~2일",
+          arrivalDate: daysFromToday(2),
+        },
+        {
+          methodType: "WALLET",
+          methodProvider: "ZALOPAY",
+          methodName: "ZaloPay",
+          speedType: "EXPRESS",
+          fixedFee: 4000,
+          rateMargin: 0,
+          totalAmount: 19030000,
+          transferTime: "15분 ~ 1시간",
+          arrivalDate: daysFromToday(0),
+        },
+      ],
+    },
+  };
+
+// 기존 응답을 UI용 템플릿으로 사용하고 선택한 통화·금액으로 견적을 만듭니다.
+// 수수료는 KRW 기준 목데이터를 보내는 통화로 환산한 임시 값입니다.
+export function getMockReceiveOptions(
+  fromCurrency: string,
+  toCurrency: string,
+  sendAmount: string,
+): ApiResponse<MockReceiveOptionsResult> {
+  const rate = getMockRate(fromCurrency, toCurrency);
+  const feeRate = getMockRate("KRW", fromCurrency);
+  const amount = Number(sendAmount);
+  const validAmount = Number.isFinite(amount) && amount > 0 ? amount : 0;
+  const options = MOCK_RECEIVE_OPTIONS_RESPONSE.result.options
+    // MoMo와 ZaloPay는 베트남 전용 목데이터입니다.
+    .filter((option) => toCurrency === "VND" || option.methodType !== "WALLET")
+    .map((option) => ({
+      ...option,
+      fixedFee: Math.round(option.fixedFee * (feeRate ?? 0) * 100) / 100,
+      totalAmount:
+        Math.round(validAmount * (rate ?? 0) * (1 - option.rateMargin) * 100) /
+        100,
+    }));
+
+  return {
+    ...MOCK_RECEIVE_OPTIONS_RESPONSE,
+    result: {
+      sendCurrency: fromCurrency,
+      receiveCurrency: toCurrency,
+      sendAmount: validAmount,
+      options: rate === undefined || feeRate === undefined ? [] : options,
+    },
+  };
+}
